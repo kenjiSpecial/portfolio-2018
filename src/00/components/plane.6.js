@@ -460,8 +460,6 @@ export class Plane extends EventEmitter {
 			this._gl.disable(BLEND);
 		}
 
-		// this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_INT, 0);
-		// console.log(this._cnt);
 		this._gl.drawArrays(TRIANGLES, 0, this._cnt);
 
 		return this;

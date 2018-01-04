@@ -25,8 +25,8 @@ export default class App {
 		this._makePlane();
 		this._makeCamera();
 
-		this._mouse = { x: -999, y: -999 };
-		this._targetMouse = { x: -999, y: -999 };
+		this._mouse = { x: 0, y: 0 };
+		this._targetMouse = { x: 0, y: 0 };
 
 		this._angle = { theta: 0, phi: 0 };
 		this._targetAngle = { theta: 0, phi: 0 };
