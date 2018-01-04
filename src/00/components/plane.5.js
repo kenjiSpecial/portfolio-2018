@@ -8,14 +8,14 @@ import {
 	FRONT,
 	BACK,
 	TRIANGLES,
-	UNSIGNED_SHORT,
 	DEPTH_TEST,
 	SRC_ALPHA,
 	ONE,
 	ZERO,
 	BLEND,
 	LINES,
-	UNSIGNED_INT
+	UNSIGNED_INT,
+	ONE_MINUS_SRC_ALPHA
 } from 'tubugl-constants';
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
@@ -37,18 +37,31 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform float uTime;
+uniform float uTrans;
+uniform vec2 uMouse;
 
 varying float vPositionZ;
 varying vec3 vColor;
 varying vec3 vColor2;
+
 void main() {
 	vColor = color;
 	vColor2 = color2;
 	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
-	// vPositionZ = 1.0;
     float rad = theta.z;
-    vec2 pos = vec2(0.0); //rad/10. * vec2(cos(theta.x + uTime * thetaVel.x), sin(theta.y + uTime * thetaVel.y));
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * ( vec4(pos.xy + position.xy , position.z * vPositionZ , 1.0));
+	vec2 pos = vec2(0.0); //rad/10. * vec2(cos(theta.x + uTime * thetaVel.x), sin(theta.y + uTime * thetaVel.y));
+	
+	 
+	gl_Position = projectionMatrix * viewMatrix * (modelMatrix * ( vec4(pos.xy + position.xy , position.z * vPositionZ , 1.0)) );
+	
+	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
+	float mTheta = atan(dMouse.y, dMouse.x);
+	float dis = length(dMouse);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.1 * clamp(length(uMouse) - 0.03, 0.0, 1.0);
+	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
+	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
+	
+	vPositionZ =  vPositionZ * (scale * 30.  + 1.0);
 }`;
 
 export const baseShaderFragSrc = `
@@ -61,7 +74,7 @@ varying vec3 vColor2;
 void main() {
     vec3 color =  mix(vColor2, vColor, vPositionZ * 2. - 0.5);
     
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.);
 
 }`;
 
@@ -70,14 +83,13 @@ export class Plane extends EventEmitter {
 		super();
 
 		this.position = new Vector3();
-		// this.position.x = -200;
-		// this.position.y = -100;
 		this.rotation = new Euler();
 		this.scale = new Vector3(1, 1, 1);
 
 		this._isGl2 = params.isGl2;
 		this._gl = gl;
 		this._side = params.side ? params.side : 'double'; // 'front', 'back', 'double'
+		this._introRate = 0;
 
 		this._width = width;
 		this._height = height;
@@ -146,7 +158,6 @@ export class Plane extends EventEmitter {
 			for (var yy = -10; yy <= 0; yy++) {
 				let theta = xx / 10 * Math.PI + randomFloat(-0.2, 0.2);
 				let rad = (11 + yy) * 30 + randomFloat(-20, 20) + 10;
-				// points.push([xx * 40 + randomFloat(-20, 20), yy * 40 + randomFloat(-20, 20)]);
 				points.push([rad * Math.cos(theta), rad * Math.sin(theta)]);
 				var rand2 = randomFloat(0, 0.4) + 0.6;
 				var rand = randomFloat(0, 0.2) + 0.8;
@@ -156,9 +167,8 @@ export class Plane extends EventEmitter {
 			}
 		}
 
-		console.log(testPoints.length);
 		for (var ii = 0; ii < testPoints.length; ii++) {
-			points.push([testPoints[ii][0], testPoints[ii][1] + 15]);
+			points.push([testPoints[ii][0] + randomFloat(-0.1, 0.1), testPoints[ii][1] + 15]);
 			colors.push(0.3, 0.4, 0.6);
 			var rand = randomFloat(0, 0.1) + 0.8;
 			color2s.push(rand, rand, rand);
@@ -168,9 +178,7 @@ export class Plane extends EventEmitter {
 		for (var ii = 0; ii < workData.length; ii++) {
 			points.push([workData[ii][0], workData[ii][1] - 15]);
 			colors.push(0.3, 0.4, 0.6);
-			var rand = randomFloat(0, 0.1) + 0.8;
 			color2s.push(rand, rand, rand);
-
 			indicesColor[indexNum++] = 'about';
 		}
 
@@ -179,7 +187,6 @@ export class Plane extends EventEmitter {
 		let thetaVelocityArr = new Float32Array(delaunay.coords.length);
 		let thetaArr = new Float32Array(delaunay.coords.length * 1.5);
 
-		console.log('object');
 		for (var ii = 0; ii < delaunay.coords.length / 2; ii++) {
 			coords[3 * ii] = delaunay.coords[2 * ii];
 			coords[3 * ii + 1] = delaunay.coords[2 * ii + 1];
@@ -191,7 +198,9 @@ export class Plane extends EventEmitter {
 
 			thetaArr[3 * ii] = randomFloat(0, 2 * Math.PI);
 			thetaArr[3 * ii + 1] = randomFloat(0, 2 * Math.PI);
-			thetaArr[3 * ii + 2] = randomFloat(0, 2);
+
+			if (indicesColor[ii] == 'normal') thetaArr[3 * ii + 2] = 2;
+			else thetaArr[3 * ii + 2] = 2; // - 100 * Math.sin(delaunay.coords[2 * ii + 1] / 400 * 5);
 		}
 
 		let updatedCoords = [],
@@ -200,10 +209,11 @@ export class Plane extends EventEmitter {
 			updatedColor2s = [],
 			updatedThetaVelocityArr = [];
 		let indices = delaunay.triangles;
-		console.log(indices);
+
 		for (let ii = 0; ii < indices.length; ii++) {
 			let index = indices[ii];
 			updatedCoords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
+
 			updatedThetaArr.push(
 				thetaArr[3 * index],
 				thetaArr[3 * index + 1],
@@ -250,6 +260,7 @@ export class Plane extends EventEmitter {
 					let colorRate2 = mix(1.0, 0.4, mixRate);
 					let blue1 = mix(rand, 1.0, mixRate);
 					let blue2 = mix(rand2, 1.0, mixRate);
+
 					updatedColors.push(rand * colorRate, rand * colorRate, blue1);
 					updatedColor2s.push(rand * colorRate2, rand * colorRate2, blue1);
 				}
@@ -262,8 +273,6 @@ export class Plane extends EventEmitter {
 				}
 			}
 		}
-		console.log(updatedColor2s.length);
-		console.log(updatedCoords.length);
 
 		this._positionBuffer = new ArrayBuffer(this._gl, new Float32Array(updatedCoords));
 		this._positionBuffer.setAttribs('position', 3);
@@ -276,6 +285,8 @@ export class Plane extends EventEmitter {
 
 		this._color2Buffer = new ArrayBuffer(this._gl, new Float32Array(updatedColor2s));
 		this._color2Buffer.setAttribs('color2', 3);
+
+		// this._initPositionBuffer = new ArrayBuffer(this._gl, new Float32Array(initPosition));
 
 		this._thetaVelocityBuffer = new ArrayBuffer(
 			this._gl,
@@ -317,12 +328,12 @@ export class Plane extends EventEmitter {
 		}
 	}
 
-	render(camera) {
-		this.update(camera).draw();
+	render(camera, mouse) {
+		this.update(camera, mouse).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
 
-	update(camera) {
+	update(camera, mouse) {
 		this._updateModelMatrix();
 
 		this._program.bind();
@@ -344,6 +355,8 @@ export class Plane extends EventEmitter {
 			false,
 			camera.projectionMatrix
 		);
+		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
+		// console.log(mouse.x);
 
 		if (!this._time) this._time = 1 / 60;
 		else this._time += 1 / 500;
@@ -390,15 +403,13 @@ export class Plane extends EventEmitter {
 		else this._gl.disable(DEPTH_TEST);
 
 		if (this._isTransparent) {
-			this._gl.blendFunc(SRC_ALPHA, ONE);
+			this._gl.blendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
 			this._gl.enable(BLEND);
 		} else {
 			this._gl.blendFunc(SRC_ALPHA, ZERO);
 			this._gl.disable(BLEND);
 		}
 
-		// this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_INT, 0);
-		// console.log(this._cnt);
 		this._gl.drawArrays(TRIANGLES, 0, this._cnt);
 
 		return this;
@@ -413,30 +424,28 @@ export class Plane extends EventEmitter {
 	resize() {}
 
 	addGui(gui) {
-		let positionFolder = gui.addFolder('position');
-		positionFolder.add(this.position, 'x', -200, 200);
-		positionFolder.add(this.position, 'y', -200, 200);
-		positionFolder.add(this.position, 'z', -200, 200);
-
-		let scaleFolder = gui.addFolder('scale');
-		scaleFolder.add(this.scale, 'x', 0.05, 2).step(0.01);
-		scaleFolder.add(this.scale, 'y', 0.05, 2).step(0.01);
-		scaleFolder.add(this.scale, 'z', 0.05, 2).step(0.01);
-
-		let rotationFolder = gui.addFolder('rotation');
-		rotationFolder.add(this.rotation, 'x', -Math.PI, Math.PI).step(0.01);
-		rotationFolder.add(this.rotation, 'y', -Math.PI, Math.PI).step(0.01);
-		rotationFolder.add(this.rotation, 'z', -Math.PI, Math.PI).step(0.01);
-
-		gui
-			.add(this, '_isWire')
-			.name('isWire')
-			.onChange(() => {
-				if (this._isWire && !this._wireframeProgram) {
-					this._makeWireframe();
-					this._makeWireframeBuffer();
-				}
-			});
+		// let positionFolder = gui.addFolder('position');
+		// positionFolder.add(this.position, 'x', -200, 200);
+		// positionFolder.add(this.position, 'y', -200, 200);
+		// positionFolder.add(this.position, 'z', -200, 200);
+		// let scaleFolder = gui.addFolder('scale');
+		// scaleFolder.add(this.scale, 'x', 0.05, 2).step(0.01);
+		// scaleFolder.add(this.scale, 'y', 0.05, 2).step(0.01);
+		// scaleFolder.add(this.scale, 'z', 0.05, 2).step(0.01);
+		// let rotationFolder = gui.addFolder('rotation');
+		// rotationFolder.add(this.rotation, 'x', -Math.PI, Math.PI).step(0.01);
+		// rotationFolder.add(this.rotation, 'y', -Math.PI, Math.PI).step(0.01);
+		// rotationFolder.add(this.rotation, 'z', -Math.PI, Math.PI).step(0.01);
+		// gui
+		// 	.add(this, '_isWire')
+		// 	.name('isWire')
+		// 	.onChange(() => {
+		// 		if (this._isWire && !this._wireframeProgram) {
+		// 			this._makeWireframe();
+		// 			this._makeWireframeBuffer();
+		// 		}
+		// 	});
+		gui.add(this, 'startIntro');
 	}
 
 	_updateModelMatrix() {

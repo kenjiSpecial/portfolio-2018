@@ -7,7 +7,7 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.4';
+import { Plane } from './components/plane.6';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 export default class App {
@@ -22,10 +22,14 @@ export default class App {
 		this.gl.getExtension('OES_element_index_uint');
 
 		this._setClear();
-		// this._makeBox();
 		this._makePlane();
 		this._makeCamera();
-		this._makeCameraController();
+
+		this._mouse = { x: -999, y: -999 };
+		this._targetMouse = { x: -999, y: -999 };
+
+		this._angle = { theta: 0, phi: 0 };
+		this._targetAngle = { theta: 0, phi: 0 };
 
 		this.resize(this._width, this._height);
 
@@ -34,10 +38,23 @@ export default class App {
 			document.body.appendChild(this.stats.dom);
 			this._addGui();
 		}
+
+		this.canvas.addEventListener('mousemove', event => {
+			let xRate = (event.clientX - this._width / 2) / (this._width / 2);
+			let yRate = (-event.clientY + this._height / 2) / (this._height / 2);
+
+			this._targetMouse = { x: xRate, y: yRate };
+
+			let theta = this._targetMouse.x / 12;
+			let phi = this._targetMouse.y / 10;
+			this._targetAngle.theta = theta;
+			this._targetAngle.phi = phi;
+		});
 	}
 
 	animateIn() {
 		this.isLoop = true;
+		this._plane.startIntro();
 		TweenLite.ticker.addEventListener('tick', this.loop, this);
 	}
 
@@ -46,7 +63,7 @@ export default class App {
 
 		this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 		// Clear to black, fully opaque
-		this.gl.clearColor(0.8, 0.8, 0.8, 1);
+		this.gl.clearColor(0.9, 0.9, 0.9, 1);
 		// Clear everything
 		this.gl.clearDepth(1.0);
 		// Enable depth testing
@@ -58,8 +75,19 @@ export default class App {
 
 		this._camera.time += 1 / 60;
 
+		this._angle.theta += (this._targetAngle.theta - this._angle.theta) / 10;
+		this._angle.phi += (this._targetAngle.phi - this._angle.phi) / 10;
+		this._camera.position.z = 300 * Math.cos(this._angle.theta) * Math.cos(this._angle.phi);
+		this._camera.position.x = 300 * Math.sin(this._angle.theta) * Math.cos(this._angle.phi);
+		this._camera.position.y = 300 * Math.sin(this._angle.phi);
+		this._camera.lookAt([0, 0, 0]);
 		this._camera.update();
-		this._plane.render(this._camera);
+
+		if (this._mouse.x === -999) this._mouse.x = this._targetMouse.x;
+		else this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
+		if (this._mouse.y === -999) this._mouse.y = this._targetMouse.y;
+		else this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
+		this._plane.render(this._camera, this._mouse);
 	}
 
 	animateOut() {
@@ -124,7 +152,11 @@ export default class App {
 	}
 
 	_makePlane() {
-		this._plane = new Plane(this.gl, 200, 200, 20, 20, { isWire: false });
+		this._plane = new Plane(this.gl, 200, 200, 20, 20, {
+			isWire: false,
+			side: 'back',
+			isTransparent: true
+		});
 	}
 
 	_makeCameraController() {
@@ -142,7 +174,7 @@ export default class App {
 		this.gui = new dat.GUI();
 		this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
 		// this._boxGUIFolder = this.gui.addFolder('rounding  cube');
-		// this._box.addGui(this._boxGUIFolder);
+		this._plane.addGui(this.gui);
 		// this._boxGUIFolder.open();
 	}
 }
