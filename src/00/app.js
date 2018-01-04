@@ -7,7 +7,7 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.2';
+import { Plane } from './components/plane.4';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 export default class App {
@@ -134,7 +134,8 @@ export default class App {
 	}
 	_makeCamera() {
 		this._camera = new PerspectiveCamera(window.innerWidth, window.innerHeight, 60, 1, 2000);
-		this._camera.position.z = 250;
+		this._camera.position.z = 300;
+		this._camera.lookAt([0, 0, 0]);
 	}
 
 	_addGui() {
