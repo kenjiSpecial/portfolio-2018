@@ -7,9 +7,7 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-// import { ProceduralRoundingCube } from 'tubugl-3d-shape';
-// import { NormalHelper, GridHelper } from 'tubugl-helper';
-import { Plane } from './components/plane.1';
+import { Plane } from './components/plane.2';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 export default class App {
@@ -20,7 +18,7 @@ export default class App {
 		this._height = params.height ? params.height : window.innerHeight;
 
 		this.canvas = document.createElement('canvas');
-		this.gl = this.canvas.getContext('webgl');
+		this.gl = this.canvas.getContext('webgl', { antialias: true, alpha: false });
 		this.gl.getExtension('OES_element_index_uint');
 
 		this._setClear();
@@ -48,7 +46,7 @@ export default class App {
 
 		this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 		// Clear to black, fully opaque
-		this.gl.clearColor(0.0, 0.0, 0.0, 1);
+		this.gl.clearColor(0.8, 0.8, 0.8, 1);
 		// Clear everything
 		this.gl.clearDepth(1.0);
 		// Enable depth testing

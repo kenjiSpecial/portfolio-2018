@@ -1,7 +1,7 @@
 const EventEmitter = require('wolfy87-eventemitter');
 const Delaunator = require('delaunator');
 import { mat4 } from 'gl-matrix/src/gl-matrix';
-import { base2ShaderVertSrc, base2ShaderFragSrc, wireFrameFragSrc } from './shaders/base.shader';
+import { wireFrameFragSrc } from './shaders/base.shader';
 import { Program, ArrayBuffer, IndexArrayBuffer, VAO } from 'tubugl-core';
 import {
 	CULL_FACE,
@@ -20,607 +20,10 @@ import {
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
-// import { testPoints } from './testData';
-let testPoints = [
-	[-2, 9],
-	[-1, 9],
-	[0, 9],
-	[1, 9],
-	[-30, 8],
-	[-29, 8],
-	[-28, 8],
-	[-27, 8],
-	[-20, 8],
-	[-19, 8],
-	[-18, 8],
-	[-17, 8],
-	[-16, 8],
-	[-15, 8],
-	[-14, 8],
-	[-13, 8],
-	[-12, 8],
-	[-11, 8],
-	[-4, 8],
-	[-3, 8],
-	[-2, 8],
-	[-1, 8],
-	[0, 8],
-	[1, 8],
-	[2, 8],
-	[3, 8],
-	[9, 8],
-	[10, 8],
-	[11, 8],
-	[18, 8],
-	[19, 8],
-	[20, 8],
-	[21, 8],
-	[22, 8],
-	[23, 8],
-	[24, 8],
-	[25, 8],
-	[26, 8],
-	[27, 8],
-	[28, 8],
-	[29, 8],
-	[30, 8],
-	[31, 8],
-	[32, 8],
-	[33, 8],
-	[34, 8],
-	[-30, 7],
-	[-29, 7],
-	[-28, 7],
-	[-27, 7],
-	[-26, 7],
-	[-20, 7],
-	[-19, 7],
-	[-18, 7],
-	[-17, 7],
-	[-16, 7],
-	[-15, 7],
-	[-14, 7],
-	[-13, 7],
-	[-12, 7],
-	[-11, 7],
-	[-10, 7],
-	[-5, 7],
-	[-4, 7],
-	[-3, 7],
-	[-2, 7],
-	[-1, 7],
-	[0, 7],
-	[1, 7],
-	[2, 7],
-	[3, 7],
-	[4, 7],
-	[5, 7],
-	[9, 7],
-	[10, 7],
-	[11, 7],
-	[18, 7],
-	[19, 7],
-	[20, 7],
-	[21, 7],
-	[22, 7],
-	[23, 7],
-	[24, 7],
-	[25, 7],
-	[26, 7],
-	[27, 7],
-	[28, 7],
-	[29, 7],
-	[30, 7],
-	[31, 7],
-	[32, 7],
-	[33, 7],
-	[34, 7],
-	[-31, 6],
-	[-30, 6],
-	[-29, 6],
-	[-28, 6],
-	[-27, 6],
-	[-26, 6],
-	[-20, 6],
-	[-19, 6],
-	[-18, 6],
-	[-17, 6],
-	[-16, 6],
-	[-15, 6],
-	[-14, 6],
-	[-13, 6],
-	[-12, 6],
-	[-11, 6],
-	[-10, 6],
-	[-6, 6],
-	[-5, 6],
-	[-4, 6],
-	[-3, 6],
-	[-2, 6],
-	[-1, 6],
-	[0, 6],
-	[1, 6],
-	[2, 6],
-	[3, 6],
-	[4, 6],
-	[5, 6],
-	[9, 6],
-	[10, 6],
-	[11, 6],
-	[18, 6],
-	[19, 6],
-	[20, 6],
-	[21, 6],
-	[22, 6],
-	[23, 6],
-	[24, 6],
-	[25, 6],
-	[26, 6],
-	[27, 6],
-	[28, 6],
-	[29, 6],
-	[30, 6],
-	[31, 6],
-	[32, 6],
-	[33, 6],
-	[34, 6],
-	[-31, 5],
-	[-30, 5],
-	[-29, 5],
-	[-28, 5],
-	[-27, 5],
-	[-26, 5],
-	[-20, 5],
-	[-19, 5],
-	[-18, 5],
-	[-12, 5],
-	[-11, 5],
-	[-10, 5],
-	[-9, 5],
-	[-7, 5],
-	[-6, 5],
-	[-5, 5],
-	[-4, 5],
-	[-3, 5],
-	[3, 5],
-	[4, 5],
-	[5, 5],
-	[6, 5],
-	[9, 5],
-	[10, 5],
-	[11, 5],
-	[18, 5],
-	[19, 5],
-	[20, 5],
-	[21, 5],
-	[27, 5],
-	[28, 5],
-	[29, 5],
-	[-32, 4],
-	[-31, 4],
-	[-30, 4],
-	[-29, 4],
-	[-28, 4],
-	[-27, 4],
-	[-26, 4],
-	[-25, 4],
-	[-20, 4],
-	[-19, 4],
-	[-18, 4],
-	[-12, 4],
-	[-11, 4],
-	[-10, 4],
-	[-9, 4],
-	[-7, 4],
-	[-6, 4],
-	[-5, 4],
-	[-4, 4],
-	[3, 4],
-	[4, 4],
-	[5, 4],
-	[6, 4],
-	[9, 4],
-	[10, 4],
-	[11, 4],
-	[18, 4],
-	[19, 4],
-	[20, 4],
-	[21, 4],
-	[27, 4],
-	[28, 4],
-	[29, 4],
-	[-32, 3],
-	[-31, 3],
-	[-30, 3],
-	[-29, 3],
-	[-28, 3],
-	[-27, 3],
-	[-26, 3],
-	[-25, 3],
-	[-20, 3],
-	[-19, 3],
-	[-18, 3],
-	[-13, 3],
-	[-12, 3],
-	[-11, 3],
-	[-10, 3],
-	[-8, 3],
-	[-7, 3],
-	[-6, 3],
-	[-5, 3],
-	[4, 3],
-	[5, 3],
-	[6, 3],
-	[7, 3],
-	[9, 3],
-	[10, 3],
-	[11, 3],
-	[18, 3],
-	[19, 3],
-	[20, 3],
-	[21, 3],
-	[27, 3],
-	[28, 3],
-	[29, 3],
-	[-32, 2],
-	[-31, 2],
-	[-30, 2],
-	[-29, 2],
-	[-27, 2],
-	[-26, 2],
-	[-25, 2],
-	[-24, 2],
-	[-20, 2],
-	[-19, 2],
-	[-18, 2],
-	[-17, 2],
-	[-16, 2],
-	[-15, 2],
-	[-14, 2],
-	[-13, 2],
-	[-12, 2],
-	[-11, 2],
-	[-10, 2],
-	[-7, 2],
-	[-6, 2],
-	[-5, 2],
-	[4, 2],
-	[5, 2],
-	[6, 2],
-	[7, 2],
-	[9, 2],
-	[10, 2],
-	[11, 2],
-	[18, 2],
-	[19, 2],
-	[20, 2],
-	[21, 2],
-	[27, 2],
-	[28, 2],
-	[29, 2],
-	[-33, 1],
-	[-32, 1],
-	[-31, 1],
-	[-30, 1],
-	[-27, 1],
-	[-26, 1],
-	[-25, 1],
-	[-24, 1],
-	[-20, 1],
-	[-19, 1],
-	[-18, 1],
-	[-17, 1],
-	[-16, 1],
-	[-15, 1],
-	[-14, 1],
-	[-13, 1],
-	[-12, 1],
-	[-11, 1],
-	[-10, 1],
-	[-8, 1],
-	[-7, 1],
-	[-6, 1],
-	[-5, 1],
-	[4, 1],
-	[5, 1],
-	[6, 1],
-	[7, 1],
-	[9, 1],
-	[10, 1],
-	[11, 1],
-	[18, 1],
-	[19, 1],
-	[20, 1],
-	[21, 1],
-	[27, 1],
-	[28, 1],
-	[29, 1],
-	[-33, 0],
-	[-32, 0],
-	[-31, 0],
-	[-30, 0],
-	[-29, 0],
-	[-28, 0],
-	[-27, 0],
-	[-26, 0],
-	[-25, 0],
-	[-24, 0],
-	[-20, 0],
-	[-19, 0],
-	[-18, 0],
-	[-17, 0],
-	[-16, 0],
-	[-15, 0],
-	[-14, 0],
-	[-13, 0],
-	[-12, 0],
-	[-11, 0],
-	[-10, 0],
-	[-9, 0],
-	[-8, 0],
-	[-7, 0],
-	[-6, 0],
-	[-5, 0],
-	[4, 0],
-	[5, 0],
-	[6, 0],
-	[7, 0],
-	[9, 0],
-	[10, 0],
-	[11, 0],
-	[18, 0],
-	[19, 0],
-	[20, 0],
-	[21, 0],
-	[27, 0],
-	[28, 0],
-	[29, 0],
-	[-34, -1],
-	[-33, -1],
-	[-32, -1],
-	[-31, -1],
-	[-30, -1],
-	[-29, -1],
-	[-28, -1],
-	[-27, -1],
-	[-26, -1],
-	[-25, -1],
-	[-24, -1],
-	[-23, -1],
-	[-20, -1],
-	[-19, -1],
-	[-18, -1],
-	[-12, -1],
-	[-11, -1],
-	[-10, -1],
-	[-9, -1],
-	[-7, -1],
-	[-6, -1],
-	[-5, -1],
-	[4, -1],
-	[5, -1],
-	[6, -1],
-	[7, -1],
-	[9, -1],
-	[10, -1],
-	[11, -1],
-	[18, -1],
-	[19, -1],
-	[20, -1],
-	[21, -1],
-	[27, -1],
-	[28, -1],
-	[29, -1],
-	[-34, -2],
-	[-33, -2],
-	[-32, -2],
-	[-31, -2],
-	[-30, -2],
-	[-29, -2],
-	[-28, -2],
-	[-27, -2],
-	[-26, -2],
-	[-25, -2],
-	[-24, -2],
-	[-23, -2],
-	[-20, -2],
-	[-19, -2],
-	[-18, -2],
-	[-12, -2],
-	[-11, -2],
-	[-10, -2],
-	[-9, -2],
-	[-7, -2],
-	[-6, -2],
-	[-5, -2],
-	[-4, -2],
-	[3, -2],
-	[4, -2],
-	[5, -2],
-	[6, -2],
-	[9, -2],
-	[10, -2],
-	[11, -2],
-	[18, -2],
-	[19, -2],
-	[20, -2],
-	[27, -2],
-	[28, -2],
-	[29, -2],
-	[-34, -3],
-	[-33, -3],
-	[-32, -3],
-	[-31, -3],
-	[-25, -3],
-	[-24, -3],
-	[-23, -3],
-	[-22, -3],
-	[-20, -3],
-	[-19, -3],
-	[-18, -3],
-	[-12, -3],
-	[-11, -3],
-	[-10, -3],
-	[-9, -3],
-	[-7, -3],
-	[-6, -3],
-	[-5, -3],
-	[-4, -3],
-	[-3, -3],
-	[3, -3],
-	[4, -3],
-	[5, -3],
-	[6, -3],
-	[9, -3],
-	[10, -3],
-	[11, -3],
-	[12, -3],
-	[17, -3],
-	[18, -3],
-	[19, -3],
-	[20, -3],
-	[27, -3],
-	[28, -3],
-	[29, -3],
-	[-35, -4],
-	[-34, -4],
-	[-33, -4],
-	[-32, -4],
-	[-25, -4],
-	[-24, -4],
-	[-23, -4],
-	[-22, -4],
-	[-20, -4],
-	[-19, -4],
-	[-18, -4],
-	[-17, -4],
-	[-16, -4],
-	[-15, -4],
-	[-14, -4],
-	[-13, -4],
-	[-12, -4],
-	[-11, -4],
-	[-10, -4],
-	[-9, -4],
-	[-6, -4],
-	[-5, -4],
-	[-4, -4],
-	[-3, -4],
-	[-2, -4],
-	[1, -4],
-	[2, -4],
-	[3, -4],
-	[4, -4],
-	[5, -4],
-	[6, -4],
-	[9, -4],
-	[10, -4],
-	[11, -4],
-	[12, -4],
-	[13, -4],
-	[14, -4],
-	[15, -4],
-	[16, -4],
-	[17, -4],
-	[18, -4],
-	[19, -4],
-	[20, -4],
-	[27, -4],
-	[28, -4],
-	[29, -4],
-	[-35, -5],
-	[-34, -5],
-	[-33, -5],
-	[-32, -5],
-	[-25, -5],
-	[-24, -5],
-	[-23, -5],
-	[-22, -5],
-	[-20, -5],
-	[-19, -5],
-	[-18, -5],
-	[-17, -5],
-	[-16, -5],
-	[-15, -5],
-	[-14, -5],
-	[-13, -5],
-	[-12, -5],
-	[-11, -5],
-	[-10, -5],
-	[-5, -5],
-	[-4, -5],
-	[-3, -5],
-	[-2, -5],
-	[-1, -5],
-	[0, -5],
-	[1, -5],
-	[2, -5],
-	[3, -5],
-	[4, -5],
-	[5, -5],
-	[10, -5],
-	[11, -5],
-	[12, -5],
-	[13, -5],
-	[14, -5],
-	[15, -5],
-	[16, -5],
-	[17, -5],
-	[18, -5],
-	[19, -5],
-	[27, -5],
-	[28, -5],
-	[29, -5],
-	[-35, -6],
-	[-34, -6],
-	[-33, -6],
-	[-32, -6],
-	[-24, -6],
-	[-23, -6],
-	[-22, -6],
-	[-21, -6],
-	[-20, -6],
-	[-19, -6],
-	[-18, -6],
-	[-17, -6],
-	[-16, -6],
-	[-15, -6],
-	[-14, -6],
-	[-13, -6],
-	[-12, -6],
-	[-11, -6],
-	[-4, -6],
-	[-3, -6],
-	[-2, -6],
-	[-1, -6],
-	[0, -6],
-	[1, -6],
-	[2, -6],
-	[3, -6],
-	[4, -6],
-	[11, -6],
-	[12, -6],
-	[13, -6],
-	[14, -6],
-	[15, -6],
-	[16, -6],
-	[17, -6],
-	[18, -6],
-	[27, -6],
-	[28, -6],
-	[29, -6],
-	[-2, -7],
-	[-1, -7],
-	[0, -7],
-	[1, -7],
-	[13, -7],
-	[14, -7],
-	[15, -7],
-	[16, -7]
-];
-import { randomFloat } from 'tubugl-utils/src/mathUtils';
-import { random } from 'gl-matrix/src/gl-matrix/vec2';
-// import { testPoints } from './testData';
+
+import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
+import { testPoints } from './textData';
+
 const baseShaderVertSrc = `
 attribute vec4 position;
 attribute vec3 theta;
@@ -639,11 +42,11 @@ varying vec3 vColor2;
 void main() {
 	vColor = color;
 	vColor2 = color2;
-    vPositionZ = clamp(position.z * ( 2.0 * (sin(theta.x + 1. * uTime * thetaVel.x) + 1.0)/3.), 0.0, 1.0);
+    vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
     float rad = theta.z;
-    vec2 pos = rad * vec2(cos(theta.x + uTime * thetaVel.x), sin(theta.y + uTime * thetaVel.y));
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * ( vec4(pos.xy + position.xy, position.z, 1.0));
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * ( vec4(position.xy, position.z * 3.0, 1.0));
+    vec2 pos = rad/10. * vec2(cos(theta.x + uTime * thetaVel.x), sin(theta.y + uTime * thetaVel.y));
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * ( vec4(pos.xy + position.xy, position.z + vPositionZ * 20. - 10., 1.0));
+	// gl_Position = projectionMatrix * viewMatrix * modelMatrix * ( vec4(position.xy, position.z * 3.0, 1.0));
 }`;
 
 export const baseShaderFragSrc = `
@@ -654,7 +57,7 @@ varying vec3 vColor;
 varying vec3 vColor2;
 
 void main() {
-    vec3 color =  mix(vColor2, vColor, vPositionZ);
+    vec3 color =  mix(vColor2, vColor, vPositionZ * 2. - 0.5);
     
     gl_FragColor = vec4(color, 1.0);
 
@@ -715,12 +118,8 @@ export class Plane extends EventEmitter {
 	}
 
 	_makeProgram(params) {
-		const fragmentShaderSrc = params.fragmentShaderSrc
-			? params.fragmentShaderSrc
-			: this._isGl2 ? base2ShaderFragSrc : baseShaderFragSrc;
-		const vertexShaderSrc = params.vertexShaderSrc
-			? params.vertexShaderSrc
-			: this._isGl2 ? base2ShaderVertSrc : baseShaderVertSrc;
+		const fragmentShaderSrc = baseShaderFragSrc;
+		const vertexShaderSrc = baseShaderVertSrc;
 
 		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc);
 	}
@@ -738,13 +137,17 @@ export class Plane extends EventEmitter {
 		let points = [];
 		let colors = [];
 		let color2s = [];
+		let indexNum = 0;
+		let indicesColor = {};
+
 		for (var xx = -20; xx <= 20; xx++) {
 			for (var yy = -20; yy <= 20; yy++) {
-				points.push([xx * 20 + randomFloat(-5, 5), yy * 20 + randomFloat(-5, 5)]);
+				points.push([xx * 30 + randomFloat(-15, 15), yy * 30 + randomFloat(-15, 15)]);
 				var rand2 = randomFloat(0, 0.4) + 0.6;
 				var rand = randomFloat(0, 0.2) + 0.8;
 				color2s.push(rand2, rand2, rand2);
 				colors.push(rand, rand, rand);
+				indicesColor[indexNum++] = 'normal';
 			}
 		}
 
@@ -753,6 +156,8 @@ export class Plane extends EventEmitter {
 			colors.push(0.3, 0.4, 0.6);
 			var rand = randomFloat(0, 0.1) + 0.8;
 			color2s.push(rand, rand, rand);
+
+			indicesColor[indexNum++] = 'about';
 		}
 
 		var delaunay = new Delaunator(points);
@@ -761,10 +166,9 @@ export class Plane extends EventEmitter {
 		let thetaArr = new Float32Array(delaunay.coords.length * 1.5);
 
 		for (var ii = 0; ii < delaunay.coords.length / 2; ii++) {
-			coords[3 * ii] = delaunay.coords[2 * ii] + randomFloat(-1, 1) * 0;
+			coords[3 * ii] = delaunay.coords[2 * ii];
 			coords[3 * ii + 1] = delaunay.coords[2 * ii + 1];
-			+randomFloat(-1, 1) / 3;
-			coords[3 * ii + 2] = 1;
+			coords[3 * ii + 2] = randomFloat(0, 10);
 
 			thetaVelocityArr[2 * ii] = randomFloat(0, 2 * Math.PI);
 			thetaVelocityArr[2 * ii + 1] = randomFloat(0, 2 * Math.PI);
@@ -774,19 +178,98 @@ export class Plane extends EventEmitter {
 			thetaArr[3 * ii + 2] = randomFloat(0, 2);
 		}
 
-		this._positionBuffer = new ArrayBuffer(this._gl, coords);
+		let updatedCoords = [],
+			updatedThetaArr = [],
+			updatedColors = [],
+			updatedColor2s = [],
+			updatedThetaVelocityArr = [];
+		let indices = delaunay.triangles;
+		console.log(indices);
+		for (let ii = 0; ii < indices.length; ii++) {
+			let index = indices[ii];
+			updatedCoords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
+			updatedThetaArr.push(
+				thetaArr[3 * index],
+				thetaArr[3 * index + 1],
+				thetaArr[3 * index + 2]
+			);
+
+			updatedThetaVelocityArr.push(
+				thetaVelocityArr[2 * index],
+				thetaVelocityArr[2 * index + 1]
+			);
+		}
+
+		for (let ii = 0; ii < indices.length; ii += 3) {
+			if (
+				indicesColor[indices[ii]] == 'about' &&
+				indicesColor[indices[ii + 1]] == 'about' &&
+				indicesColor[indices[ii + 2]] == 'about'
+			) {
+				let x0 = coords[3 * indices[ii]];
+				let y0 = coords[3 * indices[ii] + 1];
+				let x1 = coords[3 * indices[ii + 1]];
+				let y1 = coords[3 * indices[ii + 1] + 1];
+				let x2 = coords[3 * indices[ii + 2]];
+				let y2 = coords[3 * indices[ii + 2] + 1];
+				let dX01 = x0 - x1;
+				let dY01 = y0 - y1;
+				let side0 = Math.sqrt(dX01 * dX01 + dY01 * dY01);
+				let dX12 = x1 - x2;
+				let dY12 = y1 - y2;
+				let side1 = Math.sqrt(dX12 * dX12 + dY12 * dY12);
+				let dX20 = x2 - x0;
+				let dY20 = y2 - y0;
+				let side2 = Math.sqrt(dX20 * dX20 + dY20 * dY20);
+
+				let sp = (side0 + side1 + side2) / 2;
+				let area = Math.sqrt(sp * (sp - side0) * (sp - side1) * (sp - side2));
+
+				let mixRate = 1.0 - clamp((area - 0.6) * 5.0, 0.0, 1.0);
+
+				for (let kk = 0; kk < 3; kk++) {
+					var rand = randomFloat(0, 0.1) + 0.7;
+					var rand2 = randomFloat(0, 0.2) + 0.6;
+					let colorRate = mix(1.0, 0.6, mixRate);
+					let blue1 = mix(rand, 1.0, mixRate);
+					let blue2 = mix(rand2, 1.0, mixRate);
+					updatedColors.push(rand * colorRate, rand * colorRate, blue1);
+					updatedColor2s.push(rand2, rand2, blue2);
+					// } else {
+					// updatedColors.push(rand, rand, rand);
+					// updatedColor2s.push(rand, rand, rand);
+					// }
+
+					// updatedColor2s.push(rand, rand, rand);
+				}
+			} else {
+				for (let kk = 0; kk < 3; kk++) {
+					var rand = randomFloat(0, 0.1) + 0.8;
+					updatedColors.push(rand, rand, rand);
+					var rand = randomFloat(0, 0.2) + 0.7;
+					updatedColor2s.push(rand, rand, rand);
+				}
+			}
+		}
+		console.log(updatedColor2s.length);
+		console.log(updatedCoords.length);
+
+		this._positionBuffer = new ArrayBuffer(this._gl, new Float32Array(updatedCoords));
 		this._positionBuffer.setAttribs('position', 3);
 
-		this._thetaBuffer = new ArrayBuffer(this._gl, thetaArr);
+		this._thetaBuffer = new ArrayBuffer(this._gl, new Float32Array(updatedThetaArr));
 		this._thetaBuffer.setAttribs('theta', 3);
 
-		this._colorBuffer = new ArrayBuffer(this._gl, new Float32Array(colors));
+		this._colorBuffer = new ArrayBuffer(this._gl, new Float32Array(updatedColors));
 		this._colorBuffer.setAttribs('color', 3);
 
-		this._color2Buffer = new ArrayBuffer(this._gl, new Float32Array(color2s));
+		this._color2Buffer = new ArrayBuffer(this._gl, new Float32Array(updatedColor2s));
 		this._color2Buffer.setAttribs('color2', 3);
 
-		this._thetaVelocityBuffer = new ArrayBuffer(this._gl, thetaVelocityArr);
+		this._thetaVelocityBuffer = new ArrayBuffer(
+			this._gl,
+			new Float32Array(updatedThetaVelocityArr)
+		);
 		this._thetaVelocityBuffer.setAttribs('thetaVel', 2);
 
 		if (this._vao) {
@@ -794,11 +277,12 @@ export class Plane extends EventEmitter {
 		}
 
 		// console.log(delaunay);
-		let indices = delaunay.triangles; //Plane.getIndices(this._widthSegment, this._heightSegment);
+		//Plane.getIndices(this._widthSegment, this._heightSegment);
 		// console.log(delaunay);
-		this._indexBuffer = new IndexArrayBuffer(this._gl, indices);
+		// this._indexBuffer = new IndexArrayBuffer(this._gl, indices);
 
-		this._cnt = indices.length;
+		// this._cnt = indices.length;
+		this._cnt = this._positionBuffer.dataArray.length / 3;
 	}
 
 	_makeWireframeBuffer() {
@@ -818,7 +302,7 @@ export class Plane extends EventEmitter {
 			this._thetaBuffer.bind().attribPointer(this._program);
 			this._colorBuffer.bind().attribPointer(this._program);
 			this._color2Buffer.bind().attribPointer(this._program);
-			this._indexBuffer.bind();
+			// this._indexBuffer.bind();
 		}
 	}
 
@@ -902,7 +386,9 @@ export class Plane extends EventEmitter {
 			this._gl.disable(BLEND);
 		}
 
-		this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_INT, 0);
+		// this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_INT, 0);
+		// console.log(this._cnt);
+		this._gl.drawArrays(TRIANGLES, 0, this._cnt);
 
 		return this;
 	}
@@ -962,48 +448,5 @@ export class Plane extends EventEmitter {
 		this.scale.needsUpdate = false;
 
 		return this;
-	}
-
-	static getVertices(width, height, widthSegment, heightSegment) {
-		let vertices = [];
-		let xRate = 1 / widthSegment;
-		let yRate = 1 / heightSegment;
-
-		// set vertices and barycentric vertices
-		for (let yy = 0; yy <= heightSegment; yy++) {
-			let yPos = (-0.5 + yRate * yy) * height;
-
-			for (let xx = 0; xx <= widthSegment; xx++) {
-				let xPos = (-0.5 + xRate * xx) * width;
-				vertices.push(xPos);
-				vertices.push(yPos);
-			}
-		}
-		vertices = new Float32Array(vertices);
-
-		return vertices;
-	}
-
-	static getIndices(widthSegment, heightSegment) {
-		let indices = [];
-
-		for (let yy = 0; yy < heightSegment; yy++) {
-			for (let xx = 0; xx < widthSegment; xx++) {
-				let rowStartNum = yy * (widthSegment + 1);
-				let nextRowStartNum = (yy + 1) * (widthSegment + 1);
-
-				indices.push(rowStartNum + xx);
-				indices.push(rowStartNum + xx + 1);
-				indices.push(nextRowStartNum + xx);
-
-				indices.push(rowStartNum + xx + 1);
-				indices.push(nextRowStartNum + xx + 1);
-				indices.push(nextRowStartNum + xx);
-			}
-		}
-
-		indices = new Uint32Array(indices);
-
-		return indices;
 	}
 }
