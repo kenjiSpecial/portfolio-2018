@@ -158,21 +158,19 @@ export class Plane extends EventEmitter {
 		}
 
 		let points = [];
-		let colors = [];
-		let color2s = [];
 		let indexNum = 0;
 		let indicesColor = {};
-		let initPosition = [];
+
+		for (let ii = -5; ii <= 5; ii++) {
+			points.push([10 * ii + randomFloat(-5, 5), randomFloat(-8, 8)]);
+			indicesColor[indexNum++] = 'normal';
+		}
 
 		for (var xx = -10; xx <= 10; xx++) {
 			for (var yy = -10; yy <= 0; yy++) {
 				let theta = xx / 10 * Math.PI + randomFloat(-0.2, 0.2);
 				let rad = (11 + yy) * (40 + yy) + randomFloat(-20, 20) + 10;
 				points.push([rad * Math.cos(theta), rad * Math.sin(theta)]);
-				var rand2 = randomFloat(0, 0.4) + 0.6;
-				var rand = randomFloat(0, 0.2) + 0.8;
-				color2s.push(rand2, rand2, rand2);
-				colors.push(rand, rand, rand);
 				indicesColor[indexNum++] = 'normal';
 				// initPosition.push(0, 0, randomFloat(-1500, -1000));
 			}
@@ -180,20 +178,11 @@ export class Plane extends EventEmitter {
 
 		for (var ii = 0; ii < testPoints.length; ii++) {
 			points.push([testPoints[ii][0], testPoints[ii][1] + 15]);
-			colors.push(0.3, 0.4, 0.6);
-			var rand = randomFloat(0, 0.1) + 0.8;
-			color2s.push(rand, rand, rand);
 			indicesColor[indexNum++] = 'about';
-			// initPosition.push(0, 0, randomFloat(-1500, -1000));
 		}
 		for (var ii = 0; ii < workData.length; ii++) {
 			points.push([workData[ii][0], workData[ii][1] - 15]);
-			colors.push(0.3, 0.4, 0.6);
-			var rand = randomFloat(0, 0.1) + 0.8;
-			color2s.push(rand, rand, rand);
 			indicesColor[indexNum++] = 'about';
-			// initPosition.push(0, 0, -1000);
-			// initPosition.push(0, 0, randomFloat(-1500, -1000));
 		}
 
 		var delaunay = new Delaunator(points);
