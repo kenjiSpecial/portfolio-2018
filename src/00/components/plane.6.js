@@ -274,8 +274,8 @@ export class Plane extends EventEmitter {
 				let mixRate = 1.0 - clamp((area - 0.6) * 5.0, 0.0, 1.0);
 				let center = (x0 + x1 + x2) / 3 / 20;
 				for (let kk = 0; kk < 3; kk++) {
-					var rand = randomFloat(0, 0.1) + 0.8;
-					var rand2 = randomFloat(0, 0.2) + 0.7;
+					var rand = randomFloat(0, 0.1) + 0.85;
+					var rand2 = randomFloat(0, 0.1) + 0.75;
 					let colorRate = mix(1.0, 0.5, mixRate);
 					let colorRate2 = mix(1.0, 0.4, mixRate);
 					let blue1 = mix(rand, 1.0, mixRate);
@@ -298,9 +298,9 @@ export class Plane extends EventEmitter {
 				// let center = ((x0 + x1 + x2) / 3 + 300) / 600;
 				// let centerDis =
 				for (let kk = 0; kk < 3; kk++) {
-					var rand = randomFloat(0, 0.1) + 0.8;
+					var rand = randomFloat(0, 0.1) + 0.85;
 					updatedColors.push(rand, rand, rand);
-					var rand = randomFloat(0, 0.2) + 0.7;
+					var rand = randomFloat(0, 0.1) + 0.75;
 					updatedColor2s.push(rand, rand, rand);
 					updatedInitPositionArr.push(
 						randX + randomFloat(-30, 30),
