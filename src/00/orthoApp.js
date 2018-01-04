@@ -7,10 +7,9 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.6';
-import { PerspectiveCamera, CameraController } from 'tubugl-camera';
-
-const WinHeight = 950;
+import { Plane } from './components/plane.7';
+// import { OrthographicCamera, CameraController } from 'tubugl-camera';
+import { OrthographicCamera } from 'tubugl-camera/src/orthographicCamera';
 
 export default class App {
 	constructor(params = {}) {
@@ -47,8 +46,8 @@ export default class App {
 
 			this._targetMouse = { x: xRate, y: yRate };
 
-			let theta = this._targetMouse.x / 5;
-			let phi = this._targetMouse.y / 5;
+			let theta = this._targetMouse.x / 12;
+			let phi = this._targetMouse.y / 10;
 			this._targetAngle.theta = theta;
 			this._targetAngle.phi = phi;
 		});
@@ -143,12 +142,13 @@ export default class App {
 		this.gl.viewport(0, 0, this._width, this._height);
 
 		this._plane.resize(this._width, this._height);
-		var tanFOV = Math.tan(Math.PI / 180 * 60 / 2);
-		this._camera.updateFov(
-			360 / Math.PI * Math.atan(tanFOV * (window.innerHeight / WinHeight)),
-			false
+		// this._camera.updateSize(this._width, this._height);
+		this._camera.updateSize(
+			-this._width / 2,
+			this._width / 2,
+			this._height / 2,
+			-this._height / 2
 		);
-		this._camera.updateSize(this._width, this._height);
 	}
 
 	destroy() {}
@@ -172,7 +172,15 @@ export default class App {
 		this._cameraController.maxDistance = 1000;
 	}
 	_makeCamera() {
-		this._camera = new PerspectiveCamera(window.innerWidth, window.innerHeight, 60, 1, 2000);
+		// this._camera = new PerspectiveCamera(window.innerWidth, window.innerHeight, 60, 1, 2000);
+		this._camera = new OrthographicCamera(
+			-window.innerWidth / 2,
+			window.innerWidth / 2,
+			window.innerHeight / 2,
+			-window.innerHeight / 2,
+			1,
+			2000
+		);
 		this._camera.position.z = 300;
 		this._camera.lookAt([0, 0, 0]);
 	}

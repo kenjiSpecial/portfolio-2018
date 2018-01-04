@@ -2,6 +2,10 @@ const EventEmitter = require('wolfy87-eventemitter');
 const Delaunator = require('delaunator');
 const TweenLite = require('gsap/TweenLite');
 
+/**
+ * orthographic camera
+ */
+
 import { mat4 } from 'gl-matrix/src/gl-matrix';
 import { wireFrameFragSrc } from './shaders/base.shader';
 import { Program, ArrayBuffer, IndexArrayBuffer, VAO } from 'tubugl-core';
@@ -56,16 +60,16 @@ void main() {
 	vec3 transVec = initPosition * (1.0 - introProgress);
 	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
 	vec2 pos = vec2(0.0);
-	
+	 
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix *  ( vec4(pos.xy + position.xy , position.z * vPositionZ , 0.0)  + vec4(transVec, 0.0) + vec4(0.0, 0.0, 0.0, 1.0));
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.4, 0.08, 1.0);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp(length(uMouse) - 0.15, 0.0, 1.0);
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
 	
-	vPositionZ =  vPositionZ * (scale * 15.  + 1.0);
+	vPositionZ =  vPositionZ * (scale * 20.  + 1.0);
 }`;
 
 export const baseShaderFragSrc = `
@@ -118,7 +122,7 @@ export class Plane extends EventEmitter {
 		}
 	}
 	startIntro() {
-		TweenLite.fromTo(this, 4, { _introRate: 0 }, { _introRate: 1 });
+		TweenLite.fromTo(this, 3, { _introRate: 0 }, { _introRate: 1 });
 	}
 	setPosition(x, y, z) {
 		this._isNeedUpdate = true;
@@ -167,7 +171,7 @@ export class Plane extends EventEmitter {
 		for (var xx = -10; xx <= 10; xx++) {
 			for (var yy = -10; yy <= 0; yy++) {
 				let theta = xx / 10 * Math.PI + randomFloat(-0.2, 0.2);
-				let rad = (11 + yy) * (40 + yy) + randomFloat(-20, 20) + 10;
+				let rad = 50 + 10 * yy * yy + randomFloat(-20, 20);
 				points.push([rad * Math.cos(theta), rad * Math.sin(theta)]);
 				var rand2 = randomFloat(0, 0.4) + 0.6;
 				var rand = randomFloat(0, 0.2) + 0.8;
@@ -178,8 +182,10 @@ export class Plane extends EventEmitter {
 			}
 		}
 
+		let fontScale = 5;
+		this._fontScale = fontScale;
 		for (var ii = 0; ii < testPoints.length; ii++) {
-			points.push([testPoints[ii][0], testPoints[ii][1] + 15]);
+			points.push([testPoints[ii][0] * fontScale, fontScale * (testPoints[ii][1] + 15)]);
 			colors.push(0.3, 0.4, 0.6);
 			var rand = randomFloat(0, 0.1) + 0.8;
 			color2s.push(rand, rand, rand);
@@ -187,7 +193,7 @@ export class Plane extends EventEmitter {
 			// initPosition.push(0, 0, randomFloat(-1500, -1000));
 		}
 		for (var ii = 0; ii < workData.length; ii++) {
-			points.push([workData[ii][0], workData[ii][1] - 15]);
+			points.push([workData[ii][0] * fontScale, fontScale * (workData[ii][1] - 15)]);
 			colors.push(0.3, 0.4, 0.6);
 			var rand = randomFloat(0, 0.1) + 0.8;
 			color2s.push(rand, rand, rand);
@@ -244,7 +250,7 @@ export class Plane extends EventEmitter {
 		for (let ii = 0; ii < indices.length; ii += 3) {
 			let randX = randomFloat(0, 0),
 				randY = randomFloat(0, 0),
-				randZ = randomFloat(-30, 0),
+				randZ = randomFloat(-300, 0),
 				introRad;
 
 			if (
@@ -271,8 +277,8 @@ export class Plane extends EventEmitter {
 				let sp = (side0 + side1 + side2) / 2;
 				let area = Math.sqrt(sp * (sp - side0) * (sp - side1) * (sp - side2));
 
-				let mixRate = 1.0 - clamp((area - 0.6) * 5.0, 0.0, 1.0);
-				let center = (x0 + x1 + x2) / 3 / 20;
+				let mixRate = 1.0 - clamp((area - 10) / 10, 0.0, 1.0);
+				let center = (x0 + x1 + x2) / 3;
 				for (let kk = 0; kk < 3; kk++) {
 					var rand = randomFloat(0, 0.1) + 0.85;
 					var rand2 = randomFloat(0, 0.1) + 0.75;
@@ -283,13 +289,13 @@ export class Plane extends EventEmitter {
 					updatedColors.push(rand * colorRate, rand * colorRate, blue1);
 					updatedColor2s.push(rand * colorRate2, rand * colorRate2, blue1);
 					updatedInitPositionArr.push(
-						randX + randomFloat(-10, 10),
-						randY + randomFloat(-10, 10),
+						randX + randomFloat(-20, 20),
+						randY + randomFloat(-20, 20),
 						randZ
 					);
 				}
 
-				introRad = center + 1.8;
+				introRad = center / 100 + 1.8;
 			} else {
 				// let x0 = coords[3 * indices[ii]];
 				// let x1 = coords[3 * indices[ii + 1]];
@@ -303,8 +309,8 @@ export class Plane extends EventEmitter {
 					var rand = randomFloat(0, 0.1) + 0.75;
 					updatedColor2s.push(rand, rand, rand);
 					updatedInitPositionArr.push(
-						randX + randomFloat(-30, 30),
-						randY + randomFloat(-30, 30),
+						randX + randomFloat(-100, 100),
+						randY + randomFloat(-100, 100),
 						randZ
 					);
 				}
