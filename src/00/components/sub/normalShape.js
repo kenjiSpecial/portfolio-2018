@@ -1,7 +1,4 @@
-import {
-	Program,
-	ArrayBuffer
-} from 'tubugl-core';
+import { Program, ArrayBuffer } from 'tubugl-core';
 import {
 	CULL_FACE,
 	BACK,
@@ -12,11 +9,7 @@ import {
 	ONE_MINUS_SRC_ALPHA,
 	TRIANGLES
 } from 'tubugl-constants';
-import {
-	randomFloat,
-	mix,
-	clamp
-} from 'tubugl-utils/src/mathUtils';
+import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
 
 const vertexShaderSrc = `
 attribute vec4 position;
@@ -42,7 +35,7 @@ void main() {
 	vColor2 = color2;
 	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
 	float rad = theta.z;
-	float introProgress = clamp(6.0 * uTrans - thetaVel.y, 0.0, 1.0);
+	float introProgress = clamp(2.0 * uTrans - thetaVel.y, 0.0, 1.0);
 	vec3 transVec = initPosition * (1.0 - introProgress);
 	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
 	vec2 pos = vec2(0.0);
@@ -88,25 +81,21 @@ export class NormalShape {
 	addPt(indice, coords, thetaArr, thetaVelocityArr) {
 		let randX = randomFloat(0, 0),
 			randY = randomFloat(0, 0),
-			randZ = randomFloat(-30, 0);
+			randZ = randomFloat(0, 0);
 
 		for (let kk = 0; kk < 3; kk++) {
 			let rand = randomFloat(0, 0.1) + 0.85;
 			this._colors.push(rand, rand, rand);
 			rand = randomFloat(0, 0.1) + 0.75;
 			this._color2s.push(rand, rand, rand);
-			this._initPositionArr.push(
-				randX + randomFloat(-30, 30),
-				randY + randomFloat(-30, 30),
-				randZ
-			);
+			this._initPositionArr.push(randX, randY, randZ);
 		}
 
 		let center = {
 			x: 0,
 			y: 0
 		};
-		let introRad = randomFloat(0, 2);
+		let introRad = randomFloat(0, 1);
 		indice.forEach((index, num) => {
 			// console.log(index);
 			this._coords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
@@ -119,7 +108,7 @@ export class NormalShape {
 				thetaArr[3 * index + 2]
 			);
 
-			this._thetaVelocities.push(thetaVelocityArr[2 * index + 0], 0);
+			this._thetaVelocities.push(thetaVelocityArr[2 * index + 0], introRad);
 			// if (num % 3 == 0) {
 			// 	let dis = Math.sqrt(center.x * center.x + center.y * center.y) / 100;
 			// 	dis = clamp(dis, 0, 1);

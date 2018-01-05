@@ -84,15 +84,20 @@ export class Plane extends EventEmitter {
 		let indexNum = 0;
 		let indicesColor = {};
 
-		for (let ii = -5; ii <= 5; ii++) {
-			points.push([20 * ii + randomFloat(-5, 5), randomFloat(-4, 4)]);
-			indicesColor[indexNum++] = 'normal';
+		for (let j = -1; j <= 1; j++) {
+			for (let ii = -6; ii <= 6; ii++) {
+				points.push([
+					20 * ii + randomFloat(-10, 10),
+					randomFloat(-5, 5) * (Math.abs(j) + 1) + 35 * j
+				]);
+				indicesColor[indexNum++] = 'normal';
+			}
 		}
 
 		for (let xx = -9; xx < 9; xx++) {
-			for (let yy = -10; yy <= 5; yy++) {
+			for (let yy = -10; yy <= 3; yy++) {
 				let theta = xx / 9 * Math.PI + randomFloat(-0.2, 0.2);
-				let rad = (11 + yy) * (40 + yy) + randomFloat(-20, 20) + 10;
+				let rad = (11 + yy) * (30 + yy) + randomFloat(-10 * (yy + 11), 10 * (yy + 11)) + 40;
 
 				let isInsideInteractiveAreas = false;
 				let xPos = rad * Math.cos(theta);
@@ -120,8 +125,8 @@ export class Plane extends EventEmitter {
 		for (var ii = 0; ii < delaunay.coords.length / 2; ii++) {
 			coords[3 * ii] = delaunay.coords[2 * ii];
 			coords[3 * ii + 1] = delaunay.coords[2 * ii + 1];
-			if (indicesColor[ii] == 'normal') coords[3 * ii + 2] = randomFloat(0, 30);
-			else coords[3 * ii + 2] = randomFloat(-10, 10);
+			if (indicesColor[ii] == 'normal') coords[3 * ii + 2] = randomFloat(0, 20);
+			else coords[3 * ii + 2] = randomFloat(-5, 5);
 
 			thetaVelocityArr[2 * ii] = randomFloat(0, 2 * Math.PI);
 
@@ -217,7 +222,6 @@ export class Plane extends EventEmitter {
 			});
 		}
 
-		console.log(width);
 		this._aboutShape.resize(width, height);
 		this._worksShape.resize(width, height);
 	}

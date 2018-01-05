@@ -42,7 +42,7 @@ void main() {
 	
 	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
 	float rad = theta.z;
-	float introProgress = clamp(6.0 * uTrans - thetaVel.y, 0.0, 1.0);
+	float introProgress = clamp(4.0 * uTrans - thetaVel.y, 0.0, 1.0);
 	vec3 transVec = initPosition * (1.0 - introProgress);
 	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
 
@@ -81,7 +81,7 @@ void main() {
 	if(trans < 0.8) trans = 0.0;
 	if(trans * (1.0 - rate) < 0.8) trans  = 0.0;
 
-	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate)* (1.0 - uRolloutTrans));
+	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate) * (1.0 - uRolloutTrans));
 	
 	gl_FragColor = vec4(color, vAlpha);
 
@@ -102,7 +102,6 @@ export class InteractiveShape extends EventEmitter {
 	) {
 		super();
 		this.name = params.name;
-		console.log(this.name);
 
 		this._gl = gl;
 		this._side = 'double';
@@ -113,7 +112,6 @@ export class InteractiveShape extends EventEmitter {
 		this._coords = [];
 		this._colors = [];
 		this._color2s = [];
-		this._color3s = [];
 		this._thetas = [];
 		this._thetaVelocities = [];
 		this._initPositionArr = [];
@@ -143,18 +141,16 @@ export class InteractiveShape extends EventEmitter {
 
 		let randX = randomFloat(0, 0),
 			randY = randomFloat(0, 0),
-			randZ = randomFloat(-30, 0);
+			randZ = randomFloat(-20, 0);
 
 		for (let kk = 0; kk < 3; kk++) {
 			let rand = randomFloat(0, 0.1) + 0.85;
 			let colorRate = mix(1.0, 0.5, mixRate);
 			let colorRate2 = mix(1.0, 0.4, mixRate);
 			let blue1 = mix(rand, 1.0, mixRate);
-			let colorRate3 = mix(1.0, 0.6, mixRate);
 
 			this._colors.push(rand * colorRate, rand * colorRate, blue1);
 			this._color2s.push(rand * colorRate2, rand * colorRate2, blue1);
-			this._color3s.push(rand * colorRate3, rand * colorRate3, blue1);
 
 			this._initPositionArr.push(
 				randX + randomFloat(-10, 10),
@@ -163,7 +159,7 @@ export class InteractiveShape extends EventEmitter {
 			);
 		}
 
-		let introRad = center / 40 + 1.0;
+		let introRad = center / 30 + 1.8;
 
 		indice.forEach(index => {
 			this._coords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
@@ -195,7 +191,6 @@ export class InteractiveShape extends EventEmitter {
 			bottom:
 				this._glInteractiveArea.y + this._glInteractiveArea.height / 2 + windowHeight / 2
 		};
-		console.log(this._area);
 	}
 
 	initialize() {
@@ -267,7 +262,7 @@ export class InteractiveShape extends EventEmitter {
 			if (this._rolloutrate == 0.0) {
 				TweenLite.fromTo(
 					this,
-					1.2,
+					1,
 					{ _rollOverrate: 0 },
 					{
 						_rollOverrate: 1.0,
@@ -291,7 +286,7 @@ export class InteractiveShape extends EventEmitter {
 				);
 			}
 		} else if (!this._isRollover && prevRollover) {
-			TweenLite.to(this, 0.4, {
+			TweenLite.to(this, 0.6, {
 				_rolloutrate: 1.0
 			});
 		}
