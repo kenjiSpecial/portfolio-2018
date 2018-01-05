@@ -7,7 +7,7 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.6';
+import { Plane } from './components/plane.8';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 const WinHeight = 950;
@@ -27,8 +27,8 @@ export default class App {
 		this._makePlane();
 		this._makeCamera();
 
-		this._mouse = { x: 0, y: 0 };
-		this._targetMouse = { x: 0, y: 0 };
+		this._mouse = { x: 0, y: 0, windowX: -9999, windowY: -9999 };
+		this._targetMouse = { x: 0, y: 0, windowX: -9999, windowY: -9999 };
 
 		this._angle = { theta: 0, phi: 0 };
 		this._targetAngle = { theta: 0, phi: 0 };
@@ -45,7 +45,15 @@ export default class App {
 			let xRate = (event.clientX - this._width / 2) / (this._width / 2);
 			let yRate = (-event.clientY + this._height / 2) / (this._height / 2);
 
-			this._targetMouse = { x: xRate, y: yRate };
+			this._targetMouse = {
+				x: xRate,
+				y: yRate,
+				windowX: event.clientX,
+				windowY: event.clientY
+			};
+
+			this._mouse.windowX = this._targetMouse.windowX;
+			this._mouse.windowY = this._targetMouse.windowY;
 
 			let theta = this._targetMouse.x / 5;
 			let phi = this._targetMouse.y / 5;
@@ -85,10 +93,9 @@ export default class App {
 		this._camera.lookAt([0, 0, 0]);
 		this._camera.update();
 
-		if (this._mouse.x === -999) this._mouse.x = this._targetMouse.x;
-		else this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
-		if (this._mouse.y === -999) this._mouse.y = this._targetMouse.y;
-		else this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
+		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
+		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
+
 		this._plane.render(this._camera, this._mouse);
 	}
 
