@@ -136,9 +136,9 @@ export class Plane extends EventEmitter {
 
 		this._normalShape = new NormalShape(this._gl);
 		this._aboutShape = new InteractiveShape(this._gl, { name: 'about' });
-		this._aboutShape.setInteractiveArea(0, -40, 200, 40);
+		this._aboutShape.setInteractiveArea(0, -40, 220, 50);
 		this._worksShape = new InteractiveShape(this._gl, { name: 'works' });
-		this._worksShape.setInteractiveArea(0, 40, 200, 40);
+		this._worksShape.setInteractiveArea(0, 40, 220, 50);
 
 		for (let ii = 0; ii < indices.length; ii += 3) {
 			let indice0 = indices[ii];

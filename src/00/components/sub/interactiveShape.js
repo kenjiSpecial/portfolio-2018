@@ -45,7 +45,6 @@ void main() {
 	float introProgress = clamp(6.0 * uTrans - thetaVel.y, 0.0, 1.0);
 	vec3 transVec = initPosition * (1.0 - introProgress);
 	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
-	// vec2 pos = vec2(0.0);
 
 	vPos = position.xy;
 	
@@ -53,7 +52,7 @@ void main() {
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.4, 0.1, 1.0);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.4, 0.12, 1.0);
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
 	
@@ -72,16 +71,17 @@ varying vec2 vPos;
 
 uniform bool uRollover;
 uniform float uRolloverTrans;
+uniform float uRolloutTrans;  
 
 void main() {
 	if(vAlpha < 0.001) discard;
 	vec3 color;
 	float rate = clamp(abs(vPos.y - ${yPos}.)/6., 0.0, 1.0);
-	float trans = clamp(2.0 * uRolloverTrans - (vPos.x + 0.)/100., 0.0, 1.0);
+	float trans = clamp(2.0 * uRolloverTrans - (vPos.x + 50.)/100., 0.0, 1.0) ;
 	if(trans < 0.8) trans = 0.0;
 	if(trans * (1.0 - rate) < 0.8) trans  = 0.0;
 
-	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate));
+	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate)* (1.0 - uRolloutTrans));
 	
 	gl_FragColor = vec4(color, vAlpha);
 
@@ -94,7 +94,12 @@ export class InteractiveShape extends EventEmitter {
 	 * @param {*} gl
 	 * @param {{name: string}} params
 	 */
-	constructor(gl, params = { name: 'default' }) {
+	constructor(
+		gl,
+		params = {
+			name: 'default'
+		}
+	) {
 		super();
 		this.name = params.name;
 		console.log(this.name);
@@ -104,6 +109,7 @@ export class InteractiveShape extends EventEmitter {
 		this._isDesktop = true;
 		this._isRollover = false;
 		this._rollOverrate = 0;
+		this._rolloutrate = 0;
 		this._coords = [];
 		this._colors = [];
 		this._color2s = [];
@@ -173,7 +179,12 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	setInteractiveArea(xx, yy, width, height) {
-		this._glInteractiveArea = { x: xx, y: yy, width: width, height: height };
+		this._glInteractiveArea = {
+			x: xx,
+			y: yy,
+			width: width,
+			height: height
+		};
 	}
 
 	resize(windowWidth, windowHeight) {
@@ -252,9 +263,37 @@ export class InteractiveShape extends EventEmitter {
 		}
 
 		if (this._isRollover && !prevRollover) {
-			TweenLite.to(this, 1.5, { _rollOverrate: 1.0, ease: Quint.easeOut });
+			TweenLite.killTweensOf([this._rollOverrate, this._rolloutrate]);
+			if (this._rolloutrate == 0.0) {
+				TweenLite.fromTo(
+					this,
+					1.2,
+					{ _rollOverrate: 0 },
+					{
+						_rollOverrate: 1.0,
+						ease: Quint.easeOut
+					}
+				);
+			} else {
+				TweenLite.to(this, 0.4, {
+					_rolloutrate: 0.0
+				});
+				TweenLite.fromTo(
+					this,
+					1.2,
+					{
+						_rollOverrate: 0.0
+					},
+					{
+						_rollOverrate: 1.0,
+						ease: Quint.easeOut
+					}
+				);
+			}
 		} else if (!this._isRollover && prevRollover) {
-			TweenLite.to(this, 1.5, { _rollOverrate: 0.0, ease: Quint.easeOut });
+			TweenLite.to(this, 0.4, {
+				_rolloutrate: 1.0
+			});
 		}
 	}
 	render(camera, modelMatrix, introRate, mouse, time) {
@@ -289,7 +328,7 @@ export class InteractiveShape extends EventEmitter {
 			this._program.getUniforms('uRolloverTrans').location,
 			this._rollOverrate
 		);
-
+		this._gl.uniform1f(this._program.getUniforms('uRolloutTrans').location, this._rolloutrate);
 		return this;
 	}
 
