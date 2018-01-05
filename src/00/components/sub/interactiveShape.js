@@ -32,6 +32,7 @@ varying float vPositionZ;
 varying vec3 vColor;
 varying vec3 vColor2;
 varying float vAlpha;
+varying vec2 vPos;
 
 uniform bool uRollover;
 
@@ -44,9 +45,11 @@ void main() {
 	float introProgress = clamp(6.0 * uTrans - thetaVel.y, 0.0, 1.0);
 	vec3 transVec = initPosition * (1.0 - introProgress);
 	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
-	vec2 pos = vec2(0.0);
+	// vec2 pos = vec2(0.0);
+
+	vPos = position.xy;
 	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix *  ( vec4(pos.xy + position.xy , position.z * vPositionZ , 0.0)  + vec4(transVec, 0.0) + vec4(0.0, 0.0, 0.0, 1.0));
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix *  ( vec4( position.xy , position.z * vPositionZ , 0.0)  + vec4(transVec, 0.0) + vec4(0.0, 0.0, 0.0, 1.0));
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
@@ -57,13 +60,15 @@ void main() {
 	vPositionZ =  vPositionZ * (scale * 15.  + 1.0);
 }`;
 
-export const fragmentShaderSrc = `
+function fragmentShaderSrc(yPos) {
+	return `
 precision mediump float;
 
 varying float vPositionZ;
 varying vec3 vColor;
 varying vec3 vColor2;
 varying float vAlpha;
+varying vec2 vPos;
 
 uniform bool uRollover;
 uniform float uRolloverTrans;
@@ -71,15 +76,17 @@ uniform float uRolloverTrans;
 void main() {
 	if(vAlpha < 0.001) discard;
 	vec3 color;
-	// if(!uRollover) color =  mix(vColor2, vColor, vPositionZ * 2. - 0.5);
-	// else		  {
-		color =  mix( mix( vColor2, vColor, vPositionZ * 2. - 0.5), vec3(1.0), uRolloverTrans);
-	// };
+	float rate = clamp(abs(vPos.y - ${yPos}.)/6., 0.0, 1.0);
+	float trans = clamp(2.0 * uRolloverTrans - (vPos.x + 0.)/100., 0.0, 1.0);
+	if(trans < 0.8) trans = 0.0;
+	if(trans * (1.0 - rate) < 0.8) trans  = 0.0;
+
+	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate));
 	
 	gl_FragColor = vec4(color, vAlpha);
-    // else gl_FragColor = vec4(color * 0.5, vAlpha);
 
 }`;
+}
 
 export class InteractiveShape extends EventEmitter {
 	/**
@@ -214,7 +221,8 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	_makeProgram() {
-		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc);
+		let yPos = this.name == 'about' ? 15 : -15;
+		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc(yPos));
 	}
 
 	_updateAttributres() {
@@ -244,9 +252,9 @@ export class InteractiveShape extends EventEmitter {
 		}
 
 		if (this._isRollover && !prevRollover) {
-			TweenLite.to(this, 0.4, { _rollOverrate: 1 });
+			TweenLite.to(this, 1.5, { _rollOverrate: 1.0, ease: Quint.easeOut });
 		} else if (!this._isRollover && prevRollover) {
-			TweenLite.to(this, 0.4, { _rollOverrate: 0 });
+			TweenLite.to(this, 1.5, { _rollOverrate: 0.0, ease: Quint.easeOut });
 		}
 	}
 	render(camera, modelMatrix, introRate, mouse, time) {

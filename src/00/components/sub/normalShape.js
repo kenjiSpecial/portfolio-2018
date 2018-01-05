@@ -98,7 +98,7 @@ export class NormalShape {
 		let center = { x: 0, y: 0 };
 		let introRad = randomFloat(0, 2);
 		indice.forEach((index, num) => {
-			console.log(index);
+			// console.log(index);
 			this._coords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
 			center.x += coords[3 * index] / 3;
 			center.y += coords[3 * index + 1] / 3;
