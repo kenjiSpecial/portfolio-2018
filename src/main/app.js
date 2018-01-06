@@ -7,7 +7,7 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.8';
+import { Home } from './components/home';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 const WinHeight = 950;
@@ -24,7 +24,7 @@ export default class App {
 		this.gl.getExtension('OES_element_index_uint');
 
 		this._setClear();
-		this._makePlane();
+		this._makeHome();
 		this._makeCamera();
 
 		this._mouse = { x: 0, y: 0, windowX: -9999, windowY: -9999 };
@@ -60,11 +60,15 @@ export default class App {
 			this._targetAngle.theta = theta;
 			this._targetAngle.phi = phi;
 		});
+
+		this.canvas.addEventListener('click', event => {
+			this._home.click();
+		});
 	}
 
 	animateIn() {
 		this.isLoop = true;
-		this._plane.startIntro();
+		this._home.startIntro();
 		TweenLite.ticker.addEventListener('tick', this.loop, this);
 	}
 
@@ -72,13 +76,9 @@ export default class App {
 		if (this.stats) this.stats.update();
 
 		this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-		// Clear to black, fully opaque
-		this.gl.clearColor(0.9, 0.9, 0.9, 1);
-		// Clear everything
+		this.gl.clearColor(1.0, 1.0, 1.0, 1);
 		this.gl.clearDepth(1.0);
-		// Enable depth testing
 		this.gl.enable(this.gl.DEPTH_TEST);
-		// Near things obscure far things
 		this.gl.depthFunc(this.gl.LEQUAL);
 
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -96,7 +96,7 @@ export default class App {
 		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
 		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
 
-		this._plane.render(this._camera, this._mouse);
+		this._home.render(this._camera, this._mouse);
 	}
 
 	animateOut() {
@@ -149,7 +149,7 @@ export default class App {
 		this.canvas.height = this._height;
 		this.gl.viewport(0, 0, this._width, this._height);
 
-		this._plane.resize(this._width, this._height);
+		this._home.resize(this._width, this._height);
 		var tanFOV = Math.tan(Math.PI / 180 * 60 / 2);
 		this._camera.updateFov(
 			360 / Math.PI * Math.atan(tanFOV * (window.innerHeight / WinHeight)),
@@ -165,19 +165,14 @@ export default class App {
 		this.gl.enable(DEPTH_TEST);
 	}
 
-	_makePlane() {
-		this._plane = new Plane(this.gl, 200, 200, 20, 20, {
+	_makeHome() {
+		this._home = new Home(this.gl, 200, 200, 20, 20, {
 			isWire: false,
 			side: 'back',
 			isTransparent: true
 		});
 	}
 
-	_makeCameraController() {
-		this._cameraController = new CameraController(this._camera, this.canvas);
-		this._cameraController.minDistance = 10;
-		this._cameraController.maxDistance = 1000;
-	}
 	_makeCamera() {
 		this._camera = new PerspectiveCamera(window.innerWidth, window.innerHeight, 60, 1, 2000);
 		this._camera.position.z = 300;
@@ -188,7 +183,7 @@ export default class App {
 		this.gui = new dat.GUI();
 		this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
 		// this._boxGUIFolder = this.gui.addFolder('rounding  cube');
-		this._plane.addGui(this.gui);
+		this._home.addGui(this.gui);
 		// this._boxGUIFolder.open();
 	}
 }

@@ -11,10 +11,20 @@ import { randomFloat } from 'tubugl-utils/src/mathUtils';
 import { testPoints } from './data/aboutData';
 import { workData } from './data/workData';
 
-import { InteractiveShape } from './sub/interactiveShape';
-import { NormalShape } from './sub/normalShape';
+import { InteractiveShape } from './home/interactiveShape';
+import { NormalShape } from './home/normalShape';
+import { TransitionShape } from './home/transitionShape';
 
-export class Plane extends EventEmitter {
+export class Home extends EventEmitter {
+	/**
+	 *
+	 * @param {*} gl
+	 * @param {*} width
+	 * @param {*} height
+	 * @param {*} widthSegment
+	 * @param {*} heightSegment
+	 * @param {*} params
+	 */
 	constructor(gl, width = 100, height = 100, widthSegment = 1, heightSegment = 1, params = {}) {
 		super();
 
@@ -25,6 +35,7 @@ export class Plane extends EventEmitter {
 		this.scale = new Vector3(1, 1, 1);
 
 		this._isGl2 = params.isGl2;
+
 		this._gl = gl;
 		this._side = params.side ? params.side : 'double'; // 'front', 'back', 'double'
 		this._introRate = 0;
@@ -41,12 +52,22 @@ export class Plane extends EventEmitter {
 		this._isTransparent = !!params.isTransparent;
 
 		this._makeShapes();
+		this._makeTransitionShape();
 
 		this._isDebug = false;
 		if (this._isDebug) this._makeDebugPlane();
 	}
 	startIntro() {
-		TweenLite.fromTo(this, 4, { _introRate: 0 }, { _introRate: 1 });
+		TweenLite.fromTo(
+			this,
+			4,
+			{
+				_introRate: 0
+			},
+			{
+				_introRate: 1
+			}
+		);
 	}
 	setPosition(x, y, z) {
 		this._isNeedUpdate = true;
@@ -70,11 +91,15 @@ export class Plane extends EventEmitter {
 
 	_makeDebugPlane() {
 		this._debugObjArr = [];
-		let plane = new DebugPlane(this._gl, 200, 40, 1, 1, { isTransparent: true });
+		let plane = new DebugPlane(this._gl, 200, 40, 1, 1, {
+			isTransparent: true
+		});
 		plane.position.y = 40;
 		this._debugObjArr.push(plane);
 
-		let plane2 = new DebugPlane(this._gl, 210, 40, 1, 1, { isTransparent: true });
+		let plane2 = new DebugPlane(this._gl, 210, 40, 1, 1, {
+			isTransparent: true
+		});
 		plane2.position.y = -40;
 		this._debugObjArr.push(plane2);
 	}
@@ -87,7 +112,7 @@ export class Plane extends EventEmitter {
 		for (let j = -1; j <= 1; j++) {
 			for (let ii = -6; ii <= 6; ii++) {
 				points.push([
-					20 * ii + randomFloat(-10, 10),
+					20 * ii + randomFloat(-5, 5),
 					randomFloat(-5, 5) * (Math.abs(j) + 1) + 35 * j
 				]);
 				indicesColor[indexNum++] = 'normal';
@@ -117,6 +142,8 @@ export class Plane extends EventEmitter {
 			indicesColor[indexNum++] = 'works';
 		}
 
+		// ----------------------------------
+
 		var delaunay = new Delaunator(points);
 		let coords = new Float32Array(delaunay.coords.length * 1.5);
 		let thetaVelocityArr = new Float32Array(delaunay.coords.length);
@@ -140,9 +167,13 @@ export class Plane extends EventEmitter {
 		let indices = delaunay.triangles;
 
 		this._normalShape = new NormalShape(this._gl);
-		this._aboutShape = new InteractiveShape(this._gl, { name: 'about' });
+		this._aboutShape = new InteractiveShape(this._gl, {
+			name: 'about'
+		});
 		this._aboutShape.setInteractiveArea(0, -40, 220, 50);
-		this._worksShape = new InteractiveShape(this._gl, { name: 'works' });
+		this._worksShape = new InteractiveShape(this._gl, {
+			name: 'works'
+		});
 		this._worksShape.setInteractiveArea(0, 40, 220, 50);
 
 		for (let ii = 0; ii < indices.length; ii += 3) {
@@ -187,17 +218,9 @@ export class Plane extends EventEmitter {
 		this._worksShape.initialize();
 	}
 
-	_updateAttributres() {
-		if (this._vao) {
-			this._vao.bind();
-		} else {
-			this._positionBuffer.bind().attribPointer(this._program);
-			this._thetaVelocityBuffer.bind().attribPointer(this._program);
-			this._thetaBuffer.bind().attribPointer(this._program);
-			this._colorBuffer.bind().attribPointer(this._program);
-			this._color2Buffer.bind().attribPointer(this._program);
-			this._initPositionBuffer.bind().attribPointer(this._program);
-		}
+	_makeTransitionShape() {
+		this._transitionShape = new TransitionShape(this._gl);
+		this._transitionShape.setInteractiveArea(0, -40, 220, 50);
 	}
 
 	render(camera, mouse) {
@@ -207,6 +230,7 @@ export class Plane extends EventEmitter {
 		this._normalShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 		this._aboutShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 		this._worksShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
+		this._transitionShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 
 		if (this._isDebug && this._debugObjArr) {
 			this._debugObjArr.forEach(debugObj => {
@@ -224,12 +248,17 @@ export class Plane extends EventEmitter {
 
 		this._aboutShape.resize(width, height);
 		this._worksShape.resize(width, height);
+		this._transitionShape.resize(width, height);
 	}
 
 	addGui(gui) {
+		this._testAbout = this._testAbout.bind(this);
 		gui.add(this, 'startIntro');
+		gui.add(this, '_testAbout');
 	}
-
+	_testAbout() {
+		this._transitionShape.testAbout();
+	}
 	_updateModelMatrix() {
 		if (
 			!this._isNeedUpdate &&
@@ -250,5 +279,8 @@ export class Plane extends EventEmitter {
 		this.scale.needsUpdate = false;
 
 		return this;
+	}
+	click() {
+		this._transitionShape.click();
 	}
 }
