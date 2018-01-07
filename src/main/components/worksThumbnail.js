@@ -4,6 +4,7 @@ import { mat4 } from 'gl-matrix/src/gl-matrix';
 import { Loader } from './works/loader';
 import { appModel } from './model/appModel';
 import { ThumbnailPlane } from './works/thumbnailPlane';
+import { imageloader } from './util/imageloader';
 
 export class WorksThumbnail extends EventEmitter {
 	constructor(gl, params = {}) {
@@ -17,9 +18,18 @@ export class WorksThumbnail extends EventEmitter {
 		appModel.addListener('image:loaded', this._loadedHandler.bind(this));
 	}
 	_loadedHandler() {
-		this._plane = new ThumbnailPlane(this._gl, 100, 100, 10, 10, {
-			isWire: true
-		});
+		this._plane = new ThumbnailPlane(
+			this._gl,
+			{
+				isWire: false,
+				texture: imageloader.assets[0].texture
+			},
+			100,
+			100,
+			5,
+			5
+		);
+		this._plane.animateIn();
 	}
 	_makeLoaders() {
 		this._loader = new Loader(this._gl);

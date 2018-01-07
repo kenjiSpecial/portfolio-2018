@@ -1,32 +1,19 @@
 const EventEmitter = require('wolfy87-eventemitter');
 import { mat4 } from 'gl-matrix/src/gl-matrix';
 import {
-	baseShaderFragSrc,
-	baseShaderVertSrc,
-	base2ShaderVertSrc,
-	base2ShaderFragSrc,
-	wireFrameFragSrc
+	textureBaseShaderFragSrc,
+	uvBaseShaderVertSrc,
+	wireFrameFragSrc,
+	baseShaderVertSrc
 } from './shaders/base.shader';
 import { Program, ArrayBuffer, IndexArrayBuffer, VAO } from 'tubugl-core';
-import {
-	CULL_FACE,
-	FRONT,
-	BACK,
-	TRIANGLES,
-	UNSIGNED_SHORT,
-	DEPTH_TEST,
-	SRC_ALPHA,
-	ONE,
-	ZERO,
-	BLEND,
-	LINES
-} from 'tubugl-constants';
+import { CULL_FACE, FRONT, BACK, TRIANGLES, UNSIGNED_SHORT, LINES } from 'tubugl-constants';
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
 
 export class ThumbnailPlane extends EventEmitter {
-	constructor(gl, width = 100, height = 100, widthSegment = 1, heightSegment = 1, params = {}) {
+	constructor(gl, params = {}, width = 100, height = 100, widthSegment = 1, heightSegment = 1) {
 		super();
 
 		this.position = new Vector3();
@@ -36,11 +23,14 @@ export class ThumbnailPlane extends EventEmitter {
 		this._isGl2 = params.isGl2;
 		this._gl = gl;
 		this._side = params.side ? params.side : 'double'; // 'front', 'back', 'double'
+		this._texture = params.texture;
 
 		this._width = width;
 		this._height = height;
 		this._widthSegment = widthSegment;
 		this._heightSegment = heightSegment;
+
+		this.alpha = 0.0;
 
 		this._modelMatrix = mat4.create();
 		this._isNeedUpdate = true;
@@ -78,14 +68,7 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	_makeProgram(params) {
-		const fragmentShaderSrc = params.fragmentShaderSrc
-			? params.fragmentShaderSrc
-			: this._isGl2 ? base2ShaderFragSrc : baseShaderFragSrc;
-		const vertexShaderSrc = params.vertexShaderSrc
-			? params.vertexShaderSrc
-			: this._isGl2 ? base2ShaderVertSrc : baseShaderVertSrc;
-
-		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc);
+		this._program = new Program(this._gl, uvBaseShaderVertSrc, textureBaseShaderFragSrc);
 	}
 
 	_makeWireframe() {
@@ -115,6 +98,12 @@ export class ThumbnailPlane extends EventEmitter {
 		let indices = ThumbnailPlane.getIndices(this._widthSegment, this._heightSegment);
 		this._indexBuffer = new IndexArrayBuffer(this._gl, indices);
 
+		this._uvBuffer = new ArrayBuffer(
+			this._gl,
+			ThumbnailPlane.getUvs(this._widthSegment, this._heightSegment)
+		);
+		this._uvBuffer.setAttribs('uv', 2);
+
 		this._cnt = indices.length;
 	}
 
@@ -131,6 +120,7 @@ export class ThumbnailPlane extends EventEmitter {
 			this._vao.bind();
 		} else {
 			this._positionBuffer.bind().attribPointer(this._program);
+			this._uvBuffer.bind().attribPointer(this._program);
 			this._indexBuffer.bind();
 		}
 	}
@@ -162,7 +152,9 @@ export class ThumbnailPlane extends EventEmitter {
 			false,
 			camera.projectionMatrix
 		);
-
+		this._program.setUniformTexture(this._texture, 'uTexture');
+		this._gl.uniform1f(this._program.getUniforms('uAlpha').location, this.alpha);
+		this._texture.activeTexture().bind();
 		return this;
 	}
 
@@ -197,17 +189,6 @@ export class ThumbnailPlane extends EventEmitter {
 		} else {
 			this._gl.enable(CULL_FACE);
 			this._gl.cullFace(FRONT);
-		}
-
-		if (this._isDepthTest) this._gl.enable(DEPTH_TEST);
-		else this._gl.disable(DEPTH_TEST);
-
-		if (this._isTransparent) {
-			this._gl.blendFunc(SRC_ALPHA, ONE);
-			this._gl.enable(BLEND);
-		} else {
-			this._gl.blendFunc(SRC_ALPHA, ZERO);
-			this._gl.disable(BLEND);
 		}
 
 		this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_SHORT, 0);
@@ -248,6 +229,10 @@ export class ThumbnailPlane extends EventEmitter {
 					this._makeWireframeBuffer();
 				}
 			});
+	}
+
+	animateIn() {
+		TweenMax.to(this, 0.8, { alpha: 1 });
 	}
 
 	_updateModelMatrix() {
@@ -313,5 +298,25 @@ export class ThumbnailPlane extends EventEmitter {
 		indices = new Uint16Array(indices);
 
 		return indices;
+	}
+
+	static getUvs(widthSegment, heightSegment) {
+		let uvs = [];
+		let xRate = 1 / widthSegment;
+		let yRate = 1 / heightSegment;
+
+		for (let yy = 0; yy <= heightSegment; yy++) {
+			let uvY = 1.0 - yRate * yy;
+			for (let xx = 0; xx <= widthSegment; xx++) {
+				let uvX = xRate * xx;
+
+				uvs.push(uvX);
+				uvs.push(uvY);
+			}
+		}
+
+		uvs = new Float32Array(uvs);
+
+		return uvs;
 	}
 }
