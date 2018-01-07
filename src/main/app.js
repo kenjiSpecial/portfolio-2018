@@ -3,12 +3,13 @@
  */
 
 const dat = require('dat.gui/build/dat.gui.min');
-const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
 import { Home } from './components/home';
-import { PerspectiveCamera, CameraController } from 'tubugl-camera';
+import { WorksThumbnail } from './components/worksThumbnail';
+import { PerspectiveCamera } from 'tubugl-camera';
+import { appModel } from './components/model/appModel';
 
 const WinHeight = 950;
 
@@ -25,6 +26,7 @@ export default class App {
 
 		this._setClear();
 		this._makeHome();
+		this._makeWorkThumbnail();
 		this._makeCamera();
 
 		this._mouse = { x: 0, y: 0, windowX: -9999, windowY: -9999 };
@@ -41,7 +43,7 @@ export default class App {
 			this._addGui();
 		}
 
-		this.canvas.addEventListener('mousemove', event => {
+		document.body.addEventListener('mousemove', event => {
 			let xRate = (event.clientX - this._width / 2) / (this._width / 2);
 			let yRate = (-event.clientY + this._height / 2) / (this._height / 2);
 
@@ -55,8 +57,8 @@ export default class App {
 			this._mouse.windowX = this._targetMouse.windowX;
 			this._mouse.windowY = this._targetMouse.windowY;
 
-			let theta = this._targetMouse.x / 5;
-			let phi = this._targetMouse.y / 5;
+			let theta = this._targetMouse.x / 10;
+			let phi = this._targetMouse.y / 10;
 			this._targetAngle.theta = theta;
 			this._targetAngle.phi = phi;
 		});
@@ -69,7 +71,11 @@ export default class App {
 	animateIn() {
 		this.isLoop = true;
 		this._home.startIntro();
-		TweenLite.ticker.addEventListener('tick', this.loop, this);
+		TweenMax.ticker.addEventListener('tick', this.loop, this);
+	}
+
+	worksAnimateIn() {
+		this._worksThumbnail.animateIn();
 	}
 
 	loop() {
@@ -96,11 +102,23 @@ export default class App {
 		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
 		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
 
-		this._home.render(this._camera, this._mouse);
+		// render home
+		if (appModel.page == 'home' || (appModel.prevPage == 'home' && appModel.isPageTransition))
+			this._home.render(this._camera, this._mouse);
+
+		// render works thumbnail
+		if (appModel.page == 'works' || (appModel.prevPage == 'works' && appModel.isPageTransition))
+			this._worksThumbnail.render(this._camera, this._mouse);
+
+		if (this._home.isRollover && !this._home.isPrevRollover) {
+			this.canvas.style.cursor = 'pointer';
+		} else if (!this._home.isRollover && this._home.isPrevRollover) {
+			this.canvas.style.cursor = 'default';
+		}
 	}
 
 	animateOut() {
-		TweenLite.ticker.removeEventListener('tick', this.loop, this);
+		TweenMax.ticker.removeEventListener('tick', this.loop, this);
 	}
 
 	mouseMoveHandler(mouse) {
@@ -133,10 +151,10 @@ export default class App {
 	_playAndStop() {
 		this.isLoop = !this.isLoop;
 		if (this.isLoop) {
-			TweenLite.ticker.addEventListener('tick', this.loop, this);
+			TweenMax.ticker.addEventListener('tick', this.loop, this);
 			this.playAndStopGui.name('pause');
 		} else {
-			TweenLite.ticker.removeEventListener('tick', this.loop, this);
+			TweenMax.ticker.removeEventListener('tick', this.loop, this);
 			this.playAndStopGui.name('play');
 		}
 	}
@@ -173,6 +191,10 @@ export default class App {
 		});
 	}
 
+	_makeWorkThumbnail() {
+		this._worksThumbnail = new WorksThumbnail(this.gl);
+	}
+
 	_makeCamera() {
 		this._camera = new PerspectiveCamera(window.innerWidth, window.innerHeight, 60, 1, 2000);
 		this._camera.position.z = 300;
@@ -182,8 +204,10 @@ export default class App {
 	_addGui() {
 		this.gui = new dat.GUI();
 		this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
-		// this._boxGUIFolder = this.gui.addFolder('rounding  cube');
 		this._home.addGui(this.gui);
-		// this._boxGUIFolder.open();
+	}
+
+	backToHome() {
+		this._home.backToHome();
 	}
 }

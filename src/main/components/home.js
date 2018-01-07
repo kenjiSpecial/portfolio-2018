@@ -1,6 +1,5 @@
 const EventEmitter = require('wolfy87-eventemitter');
 const Delaunator = require('delaunator');
-const TweenLite = require('gsap/TweenLite');
 
 import { mat4 } from 'gl-matrix/src/gl-matrix';
 import { DebugPlane } from './debugPlane';
@@ -8,8 +7,9 @@ import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
 
 import { randomFloat } from 'tubugl-utils/src/mathUtils';
-import { testPoints } from './data/aboutData';
+import { aboutData } from './data/aboutData';
 import { workData } from './data/workData';
+import { appModel } from './model/appModel';
 
 import { InteractiveShape } from './home/interactiveShape';
 import { NormalShape } from './home/normalShape';
@@ -56,9 +56,11 @@ export class Home extends EventEmitter {
 
 		this._isDebug = false;
 		if (this._isDebug) this._makeDebugPlane();
+
+		this.isRollover = this.isPrevRollover = false;
 	}
 	startIntro() {
-		TweenLite.fromTo(
+		TweenMax.fromTo(
 			this,
 			4,
 			{
@@ -69,6 +71,11 @@ export class Home extends EventEmitter {
 			}
 		);
 	}
+
+	backToHome() {
+		this._aboutTransitionShape.backToHome();
+	}
+
 	setPosition(x, y, z) {
 		this._isNeedUpdate = true;
 
@@ -122,7 +129,8 @@ export class Home extends EventEmitter {
 		for (let xx = -9; xx < 9; xx++) {
 			for (let yy = -10; yy <= 3; yy++) {
 				let theta = xx / 9 * Math.PI + randomFloat(-0.2, 0.2);
-				let rad = (11 + yy) * (30 + yy) + randomFloat(-10 * (yy + 11), 10 * (yy + 11)) + 40;
+				let rad =
+					(11 + yy) * (40 + 2 * yy) + randomFloat(-10 * (yy + 11), 10 * (yy + 11)) + 40;
 
 				let isInsideInteractiveAreas = false;
 				let xPos = rad * Math.cos(theta);
@@ -133,8 +141,8 @@ export class Home extends EventEmitter {
 			}
 		}
 
-		for (let ii = 0; ii < testPoints.length; ii++) {
-			points.push([testPoints[ii][0], testPoints[ii][1] + 15]);
+		for (let ii = 0; ii < aboutData.length; ii++) {
+			points.push([aboutData[ii][0], aboutData[ii][1] + 15]);
 			indicesColor[indexNum++] = 'about';
 		}
 		for (let ii = 0; ii < workData.length; ii++) {
@@ -219,18 +227,36 @@ export class Home extends EventEmitter {
 	}
 
 	_makeTransitionShape() {
-		this._transitionShape = new TransitionShape(this._gl);
-		this._transitionShape.setInteractiveArea(0, -40, 220, 50);
+		this._aboutTransitionShape = new TransitionShape(this._gl, { name: 'about' });
+		this._aboutTransitionShape.setInteractiveArea(0, -40, 220, 50);
+
+		this._workTransitionShape = new TransitionShape(this._gl, { name: 'works' }, 0, -14);
+		this._workTransitionShape.setInteractiveArea(0, 40, 220, 50);
+
+		this._transitionShapes = [this._aboutTransitionShape, this._workTransitionShape];
 	}
 
 	render(camera, mouse) {
+		let isRollover = false;
+
 		if (!this._time) this._time = 1 / 60;
 		else this._time += 1 / 500;
 
 		this._normalShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 		this._aboutShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 		this._worksShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
-		this._transitionShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
+		this._transitionShapes.forEach(transitionShape => {
+			transitionShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
+			if (transitionShape.getRollOVer()) isRollover = true;
+		});
+
+		this.isPrevRollover = this.isRollover;
+
+		if (isRollover) {
+			this.isRollover = true;
+		} else {
+			this.isRollover = false;
+		}
 
 		if (this._isDebug && this._debugObjArr) {
 			this._debugObjArr.forEach(debugObj => {
@@ -248,7 +274,9 @@ export class Home extends EventEmitter {
 
 		this._aboutShape.resize(width, height);
 		this._worksShape.resize(width, height);
-		this._transitionShape.resize(width, height);
+		this._transitionShapes.forEach(transitionShape => {
+			transitionShape.resize(width, height);
+		});
 	}
 
 	addGui(gui) {
@@ -257,30 +285,28 @@ export class Home extends EventEmitter {
 		gui.add(this, '_testAbout');
 	}
 	_testAbout() {
-		this._transitionShape.testAbout();
+		this._aboutTransitionShape.testAbout();
 	}
 	_updateModelMatrix() {
-		if (
-			!this._isNeedUpdate &&
-			!this.position.needsUpdate &&
-			!this.rotation.needsMatrixUpdate &&
-			!this.scale.needsUpdate
-		)
-			return;
-
-		mat4.fromTranslation(this._modelMatrix, this.position.array);
-		mat4.scale(this._modelMatrix, this._modelMatrix, this.scale.array);
-
-		this.rotation.updateMatrix();
-		mat4.multiply(this._modelMatrix, this._modelMatrix, this.rotation.matrix);
-
-		this._isNeedUpdate = false;
-		this.position.needsUpdate = false;
-		this.scale.needsUpdate = false;
-
-		return this;
+		// if (
+		// 	!this._isNeedUpdate &&
+		// 	!this.position.needsUpdate &&
+		// 	!this.rotation.needsMatrixUpdate &&
+		// 	!this.scale.needsUpdate
+		// )
+		// 	return;
+		// mat4.fromTranslation(this._modelMatrix, this.position.array);
+		// mat4.scale(this._modelMatrix, this._modelMatrix, this.scale.array);
+		// this.rotation.updateMatrix();
+		// mat4.multiply(this._modelMatrix, this._modelMatrix, this.rotation.matrix);
+		// this._isNeedUpdate = false;
+		// this.position.needsUpdate = false;
+		// this.scale.needsUpdate = false;
+		// return this;
 	}
 	click() {
-		this._transitionShape.click();
+		this._transitionShapes.forEach(transitionShape => {
+			transitionShape.click();
+		});
 	}
 }

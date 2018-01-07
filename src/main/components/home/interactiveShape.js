@@ -11,7 +11,6 @@ import {
 	TRIANGLES
 } from 'tubugl-constants';
 import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
-const TweenLite = require('gsap/tweenlite');
 
 const vertexShaderSrc = `
 attribute vec4 position;
@@ -52,7 +51,7 @@ void main() {
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.4, 0.12, 1.0);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
 	

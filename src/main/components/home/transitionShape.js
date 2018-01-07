@@ -12,8 +12,8 @@ import {
 import { ArrayBuffer } from 'tubugl-core/src/arrayBuffer';
 import { IndexArrayBuffer } from 'tubugl-core/src/indexArrayBuffer';
 import { Program } from 'tubugl-core/src/program';
+import { appModel } from '../model/appModel';
 
-const TweenLite = require('gsap/TweenLite');
 const EventEmitter = require('wolfy87-eventemitter');
 const vertSrc = `
 precision mediump float;
@@ -29,6 +29,7 @@ uniform mat4 modelMatrix;
 uniform float uTime;
 uniform float uTrans;
 uniform vec2 uMouse;
+uniform bool uAnimateIn;
 
 varying float vPositionZ;
 varying float vScale;
@@ -41,6 +42,10 @@ varying float vTrans;
   float cubicOut(float t) {
 	float f = t - 1.0;
 	return f * f * f + 1.0;
+  }
+
+  float cubicIn(float t) {
+	return t * t * t;
   }
 
   #ifndef HALF_PI
@@ -63,12 +68,18 @@ void main(){
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.04;// clamp( 2.0 * length(uMouse) , 0.12, 1.0);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
-	float uvX = cubicOut(uv.x);
-	float uvY =  cubicOut(uv.y) ; //bounceOut(uv.y);
-	float trans = clamp(uTrans * 3.8 - 2.0 * uvX - 0.8 * uvY, 0.0, 1.0);
+	float trans;
+	if(uAnimateIn){
+		float uvX = cubicOut(uv.x);
+		float uvY =  uv.y;
+
+		trans = clamp(uTrans *2.2 - 0.8 * uvX - 0.4 * uvY, 0.0, 1.0);
+	}else{
+		trans = clamp(uTrans *1.4 - 0.25 * uv.x - 0.6  * uv.y * (1.0 - uv.y), 0.0, 1.0);
+	}
 	gl_Position.x = mix(gl_Position.x, (2. * uv.x - 1.0) * gl_Position.w, trans);
 	gl_Position.y = mix(gl_Position.y, (2. * -uv.y + 1.0) * gl_Position.w, trans);
 	gl_Position.z = mix(gl_Position.z, -0.9 * gl_Position.w, trans);
@@ -91,6 +102,7 @@ precision mediump float;
 uniform float uTrans;
 uniform float uRollOver;
 uniform float uRollOut;
+uniform bool uAnimateIn;
 
 varying float vPositionZ;
 varying float vScale;
@@ -102,12 +114,24 @@ varying float vTrans;
 float sineIn(float t) {
 return sin((t - 1.0) * HALF_PI) + 1.0;
 }
-  
+
+float sineOut(float t) {
+return sin(t * HALF_PI);
+}
+
+float cubicOut(float t) {
+	float f = t - 1.0;
+	return f * f * f + 1.0;
+  }
+
 void main(){
-    vec3 color =  mix(mix(vColor, vColor2, vPositionZ), vec3(1.0),sineIn(vTrans));
-	float colorAlpha = mix(0.0, 1.0, clamp( vTrans, 0.9, 1.0));
-	colorAlpha = colorAlpha * clamp(3.0 * uRollOver - 2. * vUv.x, 0.0, 1.0) * uRollOut;
-    gl_FragColor = vec4(color, colorAlpha);
+	float trans;
+	if(uAnimateIn) trans = sineIn(vTrans);
+	else trans = cubicOut(vTrans);
+	vec3 color =  mix(mix(vColor, vColor2, vPositionZ), vec3(1.0), trans);
+	// float colorAlpha = mix(0.0, 1.0, clamp( vTrans, 0.99, 1.0));
+	float colorAlpha = mix(0.95, 1.0, vTrans) * clamp(3.0 * uRollOver - 2. * vUv.x, 0.0, 1.0) * uRollOut;
+    gl_FragColor = vec4( color, colorAlpha);
 }
 `;
 
@@ -126,11 +150,12 @@ export class TransitionShape extends EventEmitter {
 		this._gl = gl;
 
 		this._isDesktop = true;
-		this._isTrans = false;
 		this._isRollover = false;
+		this._isAnimateIn = true;
 
 		this._x = x;
 		this._y = y;
+
 		this._width = width;
 		this._height = height;
 		this._side = 'double';
@@ -166,8 +191,9 @@ export class TransitionShape extends EventEmitter {
 
 			pts.push(xx, yy, zz);
 			pts.push(xx, yy - lineHeight * 2, zz);
-			uvs.push((ii + xNum) / (2 * xNum), 0);
-			uvs.push((ii + xNum) / (2 * xNum), 1);
+			let uvX = (ii + xNum) / (2 * xNum);
+			uvs.push(uvX, 0);
+			uvs.push(uvX, 1);
 
 			rad = randomFloat(0.8, 1.2);
 			colors.push(rad * 0.4, rad * 0.4, rad);
@@ -232,12 +258,12 @@ export class TransitionShape extends EventEmitter {
 		this._gl.uniform1f(this._program.getUniforms('uTrans').location, this._transRate);
 		this._gl.uniform1f(this._program.getUniforms('uRollOver').location, this._rollOverRate);
 		this._gl.uniform1f(this._program.getUniforms('uRollOut').location, this._rollOutRate);
+		this._gl.uniform1f(this._program.getUniforms('uAnimateIn').location, this._isAnimateIn);
 
 		return this;
 	}
 	testAbout() {
-		console.log('testAbout');
-		TweenLite.fromTo(this, 1.8, { _transRate: 0 }, { _transRate: 1 });
+		TweenMax.fromTo(this, 1.8, { _transRate: 0 }, { _transRate: 1 });
 	}
 	draw() {
 		this._gl.enable(CULL_FACE);
@@ -268,8 +294,13 @@ export class TransitionShape extends EventEmitter {
 				this._glInteractiveArea.y + this._glInteractiveArea.height / 2 + windowHeight / 2
 		};
 	}
+
+	getRollOVer() {
+		return this._isRollover;
+	}
+
 	_checkRollover(mouse) {
-		if (this._isTrans) return;
+		if (appModel.isPageTransition) return;
 
 		let prevRollover = this._isRollover;
 		if (
@@ -284,9 +315,9 @@ export class TransitionShape extends EventEmitter {
 		}
 
 		if (this._isRollover && !prevRollover) {
-			TweenLite.killTweensOf([this._rollOverRate, this._rollOutRate]);
+			TweenMax.killTweensOf([this._rollOverRate, this._rollOutRate]);
 			if (this._rollOutRate == 1.0) {
-				TweenLite.fromTo(
+				TweenMax.fromTo(
 					this,
 					0.6,
 					{ _rollOverRate: 0 },
@@ -296,10 +327,10 @@ export class TransitionShape extends EventEmitter {
 					}
 				);
 			} else {
-				TweenLite.to(this, 0.3, {
+				TweenMax.to(this, 0.3, {
 					_rollOutRate: 1.0
 				});
-				TweenLite.fromTo(
+				TweenMax.fromTo(
 					this,
 					0.6,
 					{
@@ -312,7 +343,7 @@ export class TransitionShape extends EventEmitter {
 				);
 			}
 		} else if (!this._isRollover && prevRollover) {
-			TweenLite.to(this, 0.6, {
+			TweenMax.to(this, 0.6, {
 				_rollOutRate: 0.0
 			});
 		}
@@ -334,10 +365,30 @@ export class TransitionShape extends EventEmitter {
 		this._program = new Program(this._gl, vertSrc, fragSrc);
 	}
 	click() {
-		if (this._isTrans) return;
+		if (appModel.isPageTransition) return;
+
 		if (this._isRollover) {
-			this._isTrans = true;
-			TweenLite.to(this, 1.2, { _transRate: 1 });
+			this._isRollover = false;
+			this._isAnimateIn = true;
+			TweenMax.to(this, 1.2, {
+				_transRate: 1,
+				onComplete: () => {
+					appModel.animationDone();
+				}
+			});
+
+			appModel.page = this.name;
 		}
+	}
+	backToHome() {
+		TweenMax.to(this, 1, { _transRate: 0, delay: 0.0 });
+		TweenMax.to(this, 1, {
+			_rollOutRate: 0,
+			delay: 0.5,
+			onComplete: () => {
+				appModel.animationDone();
+			}
+		});
+		this._isAnimateIn = false;
 	}
 }
