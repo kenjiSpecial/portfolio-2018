@@ -205,6 +205,7 @@ export default class App {
 		this.gui = new dat.GUI();
 		this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
 		this._home.addGui(this.gui);
+		this._worksThumbnail.addGui(this.gui);
 	}
 
 	backToHome() {

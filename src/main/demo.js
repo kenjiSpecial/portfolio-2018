@@ -38,6 +38,8 @@ function setEvent() {
 }
 function start() {
 	app.animateIn();
+
+	updatePageHandler();
 }
 
 window.addEventListener('resize', function() {
@@ -53,12 +55,15 @@ function updatePageHandler() {
 		TweenMax.set(aboutDom, { display: 'block' });
 		TweenMax.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
 	} else if (appModel.page === 'home') {
-		app.backToHome();
-		TweenMax.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
+		if (!appModel.isInit) {
+			app.backToHome();
+			TweenMax.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
+		}
 	} else {
 		works.animateIn();
 		app.worksAnimateIn();
 	}
+	appModel.isInit = false;
 }
 
 function donePageHandler() {

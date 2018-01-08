@@ -7,7 +7,8 @@ const TweenLite = require('gsap/TweenLite');
 const Stats = require('stats.js');
 
 import { DEPTH_TEST } from 'tubugl-constants';
-import { Plane } from './components/plane.8';
+// import { Plane } from './components/plane.8';
+import {} from '';
 import { PerspectiveCamera, CameraController } from 'tubugl-camera';
 
 const WinHeight = 950;

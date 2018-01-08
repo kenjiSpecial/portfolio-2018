@@ -3,10 +3,13 @@ const EventEmitter = require('wolfy87-eventemitter');
 class AppModel extends EventEmitter {
 	constructor() {
 		super();
-		this._page = this.prevPage = 'home';
 		this.isPageTransition = false;
-		this._isRollover = this.isPrevRollover = false;
 		this.isLoaded = false;
+		this.isInit = false;
+		this._curWorkNum = 0;
+
+		this._page = this.prevPage = 'works';
+		this._isRollover = this.isPrevRollover = false;
 	}
 	animationDone() {
 		this.isPageTransition = false;
@@ -21,6 +24,7 @@ class AppModel extends EventEmitter {
 	get page() {
 		return this._page;
 	}
+
 	set page(value) {
 		this.isPageTransition = true;
 		this.prevPage = this._page;
@@ -28,12 +32,23 @@ class AppModel extends EventEmitter {
 
 		this.trigger('updatePage');
 	}
+
 	get isRollover() {
 		return this._isRollover;
 	}
+
 	set isRollover(value) {
 		this.isPrevRollover = this._isRollover;
 		this._isRollover = value;
+	}
+
+	set curWorkNum(value) {
+		this._curWorkNum = value;
+		this.trigger('updteWork');
+	}
+
+	get curWorkNum() {
+		return this._curWorkNum;
 	}
 }
 

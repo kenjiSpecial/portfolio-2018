@@ -4,18 +4,34 @@ import {
 	textureBaseShaderFragSrc,
 	uvBaseShaderVertSrc,
 	wireFrameFragSrc,
-	baseShaderVertSrc
+	baseShaderVertSrc,
+	shaderVertSrc
 } from './shaders/base.shader';
 import { Program, ArrayBuffer, IndexArrayBuffer, VAO } from 'tubugl-core';
-import { CULL_FACE, FRONT, BACK, TRIANGLES, UNSIGNED_SHORT, LINES } from 'tubugl-constants';
+import {
+	CULL_FACE,
+	FRONT,
+	BACK,
+	TRIANGLES,
+	UNSIGNED_SHORT,
+	LINES,
+	BLEND,
+	SRC_ALPHA,
+	ONE_MINUS_SRC_ALPHA,
+	DEPTH_TEST
+} from 'tubugl-constants';
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
+import { Quint, Power2, TweenLite } from 'gsap';
+import { randomFloat, clamp } from 'tubugl-utils/src/mathUtils';
+import { appModel } from '../model/appModel';
 
 export class ThumbnailPlane extends EventEmitter {
 	constructor(gl, params = {}, width = 100, height = 100, widthSegment = 1, heightSegment = 1) {
 		super();
 
+		this.id = params.id;
 		this.position = new Vector3();
 		this.rotation = new Euler();
 		this.scale = new Vector3(1, 1, 1);
@@ -30,7 +46,10 @@ export class ThumbnailPlane extends EventEmitter {
 		this._widthSegment = widthSegment;
 		this._heightSegment = heightSegment;
 
-		this.alpha = 0.0;
+		this._resetTransRate();
+
+		this._uRand0 = randomFloat(-300, 300);
+		this._uRand1 = randomFloat(-300, 300);
 
 		this._modelMatrix = mat4.create();
 		this._isNeedUpdate = true;
@@ -125,12 +144,13 @@ export class ThumbnailPlane extends EventEmitter {
 		}
 	}
 
-	render(camera) {
-		this.update(camera).draw();
+	render(camera, mouse) {
+		if (this._transInRate == 0.0 || this._transOutRate == 1.0) return;
+		this.update(camera, mouse).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
 
-	update(camera) {
+	update(camera, mouse) {
 		this._updateModelMatrix();
 
 		this._program.bind();
@@ -153,9 +173,25 @@ export class ThumbnailPlane extends EventEmitter {
 			camera.projectionMatrix
 		);
 		this._program.setUniformTexture(this._texture, 'uTexture');
-		this._gl.uniform1f(this._program.getUniforms('uAlpha').location, this.alpha);
+		// this._gl.uniform1f(this._program.getUniforms('uAlpha').location, this.alpha);
+		this._gl.uniform1f(this._program.getUniforms('uSide').location, this._width);
+		this._gl.uniform1f(this._program.getUniforms('uTransIn').location, this._transInRate);
+		this._gl.uniform1f(this._program.getUniforms('uTransOut').location, this._transOutRate);
+		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
+		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
+		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
 		this._texture.activeTexture().bind();
 		return this;
+	}
+
+	_resetTransRate() {
+		if (this.id === (appModel.curWorkNum + 2) % 3) {
+			this._transInRate = 1.0;
+			this._transOutRate = 1.0;
+		} else {
+			this._transInRate = 0;
+			this._transOutRate = 0;
+		}
 	}
 
 	updateWire(camera) {
@@ -190,6 +226,9 @@ export class ThumbnailPlane extends EventEmitter {
 			this._gl.enable(CULL_FACE);
 			this._gl.cullFace(FRONT);
 		}
+		this._gl.enable(DEPTH_TEST);
+		this._gl.blendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
+		this._gl.enable(BLEND);
 
 		this._gl.drawElements(TRIANGLES, this._cnt, UNSIGNED_SHORT, 0);
 
@@ -231,8 +270,76 @@ export class ThumbnailPlane extends EventEmitter {
 			});
 	}
 
+	updateRandom() {
+		this._uRand0 = randomFloat(150, 300);
+		this._uRand1 = randomFloat(150, 300);
+		if (Math.random() < 0.5) this._uRand0 *= -1;
+		if (Math.random() < 0.5) this._uRand1 *= -1;
+	}
+
 	animateIn() {
-		TweenMax.to(this, 0.8, { alpha: 1 });
+		this._transOutRate = 0;
+		TweenMax.fromTo(
+			this,
+			1.2,
+			{ _transInRate: 0 },
+			{ _transInRate: 1, ease: Power2.easeInOut }
+		);
+	}
+
+	animateOut() {
+		this._transInRate = 1;
+		TweenMax.fromTo(
+			this,
+			1.2,
+			{ _transOutRate: 0 },
+			{ _transOutRate: 1, ease: Power2.easeInOut }
+		);
+	}
+
+	mouseMove(value) {
+		if (value > 0 && this.id === appModel.curWorkNum) {
+			console.log(this.id);
+			this._transInRate = clamp(1 - value, 0.0, 1.0);
+		} else if (value < 0 && this.id === appModel.curWorkNum) {
+			this._transOutRate = clamp(-value, 0.0, 1.0);
+		}
+
+		if (this.id === (appModel.curWorkNum + 1) % 3 && value < 0) {
+			this._transOutRate = 0.0;
+			this._transInRate = clamp(-value, 0.0, 1.0);
+		}
+
+		if (this.id === (appModel.curWorkNum + 2) % 3 && value > 0) {
+			this._transInRate = 1.0;
+			this._transOutRate = clamp(1.0 - value, 0.0, 1.0);
+		}
+	}
+
+	mouseUp(value) {
+		if (this.id === appModel.curWorkNum) {
+			TweenMax.to(this, 0.4, {
+				_transInRate: 1,
+				_transOutRate: 0,
+				onComplete: () => {
+					this.updateRandom();
+				}
+			});
+		} else if (this.id === (appModel.curWorkNum + 1) % 3) {
+			TweenMax.to(this, 0.4, { _transInRate: 0, _transOutRate: 0 });
+		} else {
+			TweenMax.to(this, 0.4, { _transInRate: 1, _transOutRate: 1 });
+		}
+	}
+
+	forceLeft() {
+		this._transInRate = 1;
+		this._transOutRate = 1;
+	}
+
+	forceRight() {
+		this._transInRate = 0;
+		this._transOutRate = 0;
 	}
 
 	_updateModelMatrix() {
