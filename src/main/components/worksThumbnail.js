@@ -52,8 +52,8 @@ export class WorksThumbnail extends EventEmitter {
 
 	_mouseDownHandler(event) {
 		if (!this._isMouseEnable) return;
-		document.body.addEventListener('mousemove', this._mouseMoveHandler);
-		document.body.addEventListener('mouseup', this._mouseUpHandler);
+		window.addEventListener('mousemove', this._mouseMoveHandler);
+		window.addEventListener('mouseup', this._mouseUpHandler);
 
 		this._startPt = event.clientX;
 	}
@@ -107,8 +107,8 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_removeMouseUpEvent() {
-		document.body.removeEventListener('mousemove', this._mouseMoveHandler);
-		document.body.removeEventListener('mouseup', this._mouseUpHandler);
+		window.removeEventListener('mousemove', this._mouseMoveHandler);
+		window.removeEventListener('mouseup', this._mouseUpHandler);
 
 		this._isMouseEnable = false;
 		TweenMax.delayedCall(0.4, () => {
@@ -121,7 +121,7 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_setMouseEvent() {
-		document.body.addEventListener('mousedown', this._mouseDownHandler);
+		window.addEventListener('mousedown', this._mouseDownHandler);
 	}
 
 	_removeMouseEvent() {}

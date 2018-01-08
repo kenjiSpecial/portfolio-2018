@@ -12,21 +12,41 @@ class Works extends EventEmitter {
 		this._works = document.getElementById('works');
 		this._worksDescriptions = document.getElementsByClassName('works-descriptions')[0];
 		this._worksFooter = document.getElementsByClassName('works-footer')[0];
+		this._titles = document.getElementsByClassName('works-name');
+		this._worksBtns = document.getElementsByClassName('works-list-btn');
 
-		// this._works.style.display = 'block';
-		// this._works.style.opacity = 1;
+		this._setEvent();
 
 		this.resizeHandler();
+
+		appModel.addListener('updateWork', this._updateWorkHandler);
 	}
 	animateIn() {
 		this.resizeHandler();
+		this.resetTitle();
 
 		if (appModel.isLoaded) {
-			TweenMax.set(this._works, { display: 'block' });
-			TweenMax.to(this._works, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
+			this.fadeIn();
 		} else {
 			imageloader.startLoad();
 		}
+	}
+	fadeIn(delay = 0) {
+		TweenMax.set(this._works, { display: 'block' });
+
+		this._titles[appModel.curWorkNum].style.display = 'block';
+		this._titles[appModel.curWorkNum].style.opacity = 1;
+		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
+
+		TweenMax.to(this._works, 1.5, { opacity: 1, delay: delay, ease: Quint.easeInOut });
+	}
+	_updateWorkHandler() {
+		TweenMax.to(this._titles[appModel.prevWorkNum], 0.3, { display: 'none', opacity: 0 });
+		removeClass(this._worksBtns[appModel.prevWorkNum], 'selected');
+
+		TweenMax.set(this._titles[appModel.curWorkNum], { display: 'block' });
+		TweenMax.to(this._titles[appModel.curWorkNum], 0.3, { opacity: 1, delay: 0.2 });
+		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
 	}
 	animateOut() {}
 	resizeHandler() {
@@ -40,6 +60,34 @@ class Works extends EventEmitter {
 			y: window.innerHeight / 2 + 260
 		});
 	}
+	imageloadedHandler() {
+		this.fadeIn(0.2);
+	}
+	resetTitle() {
+		TweenMax.set(this._titles, { display: 'none', opacity: 0 });
+	}
+	_setEvent() {
+		this.imageloadedHandler = this.imageloadedHandler.bind(this);
+		appModel.addListener('image:loaded', this.imageloadedHandler);
+		this._updateWorkHandler = this._updateWorkHandler.bind(this);
+		appModel.addListener('uupdteWork', this._updateWorkHandler);
+	}
 }
 
 export let works = new Works();
+
+function addClass(el, className) {
+	if (el.classList) el.classList.add(className);
+	else if (!hasClass(el, className)) el.className += ' ' + className;
+}
+
+function removeClass(el, className) {
+	if (el.classList) el.classList.remove(className);
+	else el.className = el.className.replace(new RegExp('\\b' + className + '\\b', 'g'), '');
+}
+
+function hasClass(el, className) {
+	return el.classList
+		? el.classList.contains(className)
+		: new RegExp('\\b' + className + '\\b').test(el.className);
+}

@@ -6,7 +6,7 @@ class AppModel extends EventEmitter {
 		this.isPageTransition = false;
 		this.isLoaded = false;
 		this.isInit = false;
-		this._curWorkNum = 0;
+		this._curWorkNum = this.prevWorkNum = 0;
 
 		this._page = this.prevPage = 'works';
 		this._isRollover = this.isPrevRollover = false;
@@ -43,8 +43,10 @@ class AppModel extends EventEmitter {
 	}
 
 	set curWorkNum(value) {
+		this.prevWorkNum = this._curWorkNum;
 		this._curWorkNum = value;
-		this.trigger('updteWork');
+
+		this.trigger('updateWork');
 	}
 
 	get curWorkNum() {
