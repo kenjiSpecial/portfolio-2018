@@ -26,8 +26,8 @@ export class WorksThumbnail extends EventEmitter {
 		appModel.addListener('image:loaded', this._loadedHandler.bind(this));
 	}
 	_loadedHandler() {
-		let side = 190;
-		let segments = 19;
+		let side = 180;
+		let segments = 15;
 		for (let ii = 0; ii < imageloader.assets.length; ii++) {
 			let thumbnail = new ThumbnailPlane(
 				this._gl,

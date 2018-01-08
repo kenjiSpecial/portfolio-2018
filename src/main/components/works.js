@@ -16,7 +16,6 @@ class Works extends EventEmitter {
 		this._worksBtns = document.getElementsByClassName('works-list-btn');
 
 		this._setEvent();
-
 		this.resizeHandler();
 
 		appModel.addListener('updateWork', this._updateWorkHandler);
@@ -68,9 +67,19 @@ class Works extends EventEmitter {
 	}
 	_setEvent() {
 		this.imageloadedHandler = this.imageloadedHandler.bind(this);
-		appModel.addListener('image:loaded', this.imageloadedHandler);
 		this._updateWorkHandler = this._updateWorkHandler.bind(this);
+		this._clickBtnHandler = this._clickBtnHandler.bind(this);
+
+		appModel.addListener('image:loaded', this.imageloadedHandler);
 		appModel.addListener('uupdteWork', this._updateWorkHandler);
+
+		for (let ii = 0; ii < this._worksBtns.length; ii++) {
+			this._worksBtns[ii].addEventListener('click', this._clickBtnHandler.bind(this, ii));
+		}
+	}
+	_clickBtnHandler(workNum) {
+		if (workNum === appModel.curWorkNum) return;
+		appModel.showWork(workNum);
 	}
 }
 
