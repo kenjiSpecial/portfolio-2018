@@ -32,7 +32,7 @@ export class NormalShape {
 			randZ = randomFloat(0, 0);
 
 		for (let kk = 0; kk < 3; kk++) {
-			let rand = randomFloat(0, 0.1) + 0.85;
+			let rand = randomFloat(0, 0.05) + 0.85;
 			this._colors.push(rand, rand, rand);
 			rand = randomFloat(0, 0.1) + 0.75;
 			this._color2s.push(rand, rand, rand);

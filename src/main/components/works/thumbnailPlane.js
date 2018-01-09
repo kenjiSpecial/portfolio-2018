@@ -56,6 +56,7 @@ export class ThumbnailPlane extends EventEmitter {
 
 		this._makeProgram(params);
 		this._makeBuffer();
+		this.resize();
 	}
 
 	setPosition(x, y, z) {
@@ -160,6 +161,9 @@ export class ThumbnailPlane extends EventEmitter {
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
+		console.log(this._uWindowRate);
+		this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
+
 		this._texture.activeTexture().bind();
 		return this;
 	}
@@ -221,7 +225,9 @@ export class ThumbnailPlane extends EventEmitter {
 		return;
 	}
 
-	resize() {}
+	resize() {
+		this._uWindowRate = window.innerWidth / window.innerHeight;
+	}
 
 	addGui(gui) {
 		let positionFolder = gui.addFolder('position');

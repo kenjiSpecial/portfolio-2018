@@ -9,6 +9,7 @@ uniform float uTransIn;
 uniform float uTransOut;
 uniform float uRandY0;
 uniform float uRandY1;
+uniform float uWindowRate;
 varying vec2 vUv;
 varying float vScale;
 varying float vAlpha;
@@ -24,6 +25,7 @@ void main(){
     vUv = uv;
     
     vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
+    dMouse.y = dMouse.y / uWindowRate;
 	float mTheta = atan(dMouse.y, dMouse.x);
     float dis = length(dMouse);
     float scale;

@@ -36,12 +36,15 @@ export class InteractiveShape extends EventEmitter {
 		this._isRollover = false;
 		this._rollOverrate = 0;
 		this._rolloutrate = 0;
+		this._minArea = 999999;
+		this._maxArea = -this._minArea;
 		this._coords = [];
 		this._colors = [];
 		this._color2s = [];
 		this._thetas = [];
 		this._thetaVelocities = [];
 		this._initPositionArr = [];
+		this._areas = [];
 		this._interactiveArea = null;
 	}
 
@@ -63,8 +66,11 @@ export class InteractiveShape extends EventEmitter {
 		let side2 = Math.sqrt(dX20 * dX20 + dY20 * dY20);
 		let sp = (side0 + side1 + side2) / 2;
 		let area = Math.sqrt(sp * (sp - side0) * (sp - side1) * (sp - side2));
-		let mixRate = 1.0 - clamp((area - 0.6) * 5.0, 0.0, 1.0);
+		let mixRate = 1.0 - clamp((area - 0.6) * 6.0, 0.0, 1.0);
 		let center = (x0 + x1 + x2) / 3;
+
+		if (this._minArea > area) this._minArea = area;
+		if (this._maxArea < area) this._maxArea = area;
 
 		let randX = randomFloat(0, 0),
 			randY = randomFloat(0, 0),
@@ -84,6 +90,8 @@ export class InteractiveShape extends EventEmitter {
 				randY + randomFloat(-10, 10),
 				randZ
 			);
+
+			this._areas.push(area);
 		}
 
 		let introRad = center / 30 + 1.8;
@@ -126,6 +134,10 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	_makeAttribuetes() {
+		this._areas.forEach((area, index) => {
+			this._areas[index] = (area - this._minArea) / (this._maxArea - this._minArea);
+		});
+
 		this._positionBuffer = new ArrayBuffer(this._gl, new Float32Array(this._coords));
 		this._positionBuffer.setAttribs('position', 3);
 
@@ -150,6 +162,9 @@ export class InteractiveShape extends EventEmitter {
 		);
 		this._thetaVelocityBuffer.setAttribs('thetaVel', 2);
 
+		this._areaBuffer = new ArrayBuffer(this._gl, new Float32Array(this._areas));
+		this._areaBuffer.setAttribs('area', 1);
+
 		this._cnt = this._positionBuffer.dataArray.length / 3;
 	}
 
@@ -167,6 +182,7 @@ export class InteractiveShape extends EventEmitter {
 			this._colorBuffer.bind().attribPointer(this._program);
 			this._color2Buffer.bind().attribPointer(this._program);
 			this._initPositionBuffer.bind().attribPointer(this._program);
+			this._areaBuffer.bind().attribPointer(this._program);
 		}
 	}
 

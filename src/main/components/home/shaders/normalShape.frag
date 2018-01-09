@@ -9,7 +9,7 @@ varying float vAlpha;
 void main() {
 	if(vAlpha < 0.001) discard;
     vec3 oColor =  mix(vColor2, vColor, vPositionZ * 2. - 0.5);
-    oColor = mix(oColor, vec3(1.4), 1.0 - uTrans);
+    oColor = mix(oColor, vec3(1.0), clamp(1.0 - uTrans, 0.0, 1.0));
     
     gl_FragColor = vec4(oColor, vAlpha);
 

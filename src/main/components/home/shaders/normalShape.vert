@@ -21,7 +21,7 @@ varying float vAlpha;
 void main() {
 	vColor = color;
 	vColor2 = color2;
-	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
+	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.5)) * 0.5, 0.25, 2.0);
 	float rad = theta.z;
 	float introProgress = clamp(2.0 * uTrans - thetaVel.y, 0.0, 1.0);
 	vec3 transVec = initPosition * (1.0 - introProgress);
@@ -32,7 +32,7 @@ void main() {
 	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
 	float mTheta = atan(dMouse.y, dMouse.x);
 	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
+	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.25 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
 	

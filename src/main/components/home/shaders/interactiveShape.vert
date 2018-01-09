@@ -6,6 +6,7 @@ attribute vec2 thetaVel;
 attribute vec3 color;
 attribute vec3 color2;
 attribute vec3 initPosition;
+attribute float area;
 
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
@@ -19,8 +20,7 @@ varying vec3 vColor;
 varying vec3 vColor2;
 varying float vAlpha;
 varying vec2 vPos;
-
-uniform bool uRollover;
+varying float vArea;
 
 void main() {
 	vColor = color;
@@ -43,4 +43,5 @@ void main() {
 	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
 	
 	vPositionZ =  vPositionZ * (scale * 15.  + 1.0);
+	vArea = area;
 }

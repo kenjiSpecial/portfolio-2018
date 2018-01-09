@@ -192,6 +192,10 @@ export class WorksThumbnail extends EventEmitter {
 	}
 	resize() {
 		this.dragDis = window.innerWidth / 2;
+
+		this._thumbnails.forEach(thumbniail => {
+			thumbniail.resize();
+		});
 	}
 	_testAnimateIn() {
 		if (this._plane) this._plane.animateIn();
