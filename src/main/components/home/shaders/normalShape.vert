@@ -1,3 +1,5 @@
+precision mediump float;
+
 attribute vec4 position;
 attribute vec3 theta;
 attribute vec2 thetaVel;

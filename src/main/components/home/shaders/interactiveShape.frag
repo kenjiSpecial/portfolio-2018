@@ -13,6 +13,7 @@ uniform float uRolloutTrans;
 void main() {
 	if(vAlpha < 0.001) discard;
 	vec3 color =   mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) );
+    color = mix(vec3(1.0), color, vAlpha);
 	
 	gl_FragColor = vec4(color, vAlpha);
 

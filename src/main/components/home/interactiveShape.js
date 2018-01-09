@@ -154,7 +154,6 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	_makeProgram() {
-		let yPos = this.name == 'about' ? 15 : -15;
 		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc);
 	}
 
