@@ -283,7 +283,7 @@ export class ThumbnailPlane extends EventEmitter {
 			this,
 			1.2,
 			{ _transInRate: 0 },
-			{ _transInRate: 1, ease: Power2.easeInOut }
+			{ _transInRate: 1, ease: Power2.easeInOut, delay: 0.3 }
 		);
 	}
 
@@ -291,9 +291,9 @@ export class ThumbnailPlane extends EventEmitter {
 		this._transInRate = 1;
 		TweenMax.fromTo(
 			this,
-			1.2,
+			0.8,
 			{ _transOutRate: 0 },
-			{ _transOutRate: 1, ease: Power2.easeInOut }
+			{ _transOutRate: 1, ease: Power2.easeOut }
 		);
 	}
 

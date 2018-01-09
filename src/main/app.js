@@ -78,6 +78,10 @@ export default class App {
 		this._worksThumbnail.animateIn();
 	}
 
+	worksAnimateOut() {
+		this._worksThumbnail.animateOut();
+	}
+
 	loop() {
 		if (this.stats) this.stats.update();
 
@@ -108,7 +112,8 @@ export default class App {
 
 		// render works thumbnail
 		if (appModel.page == 'works' || (appModel.prevPage == 'works' && appModel.isPageTransition))
-			this._worksThumbnail.render(this._camera, this._mouse);
+			this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
+		this._worksThumbnail.render(this._camera, this._mouse);
 
 		if (this._home.isRollover && !this._home.isPrevRollover) {
 			this.canvas.style.cursor = 'pointer';

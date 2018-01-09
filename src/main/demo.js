@@ -37,6 +37,7 @@ function setEvent() {
 	appModel.on('updatePage', updatePageHandler);
 	appModel.on('updatePage:done', donePageHandler);
 	aboutCloseDom.addEventListener('click', clickCloseDomHandler);
+	works.on('closeWorkHandler', closeWorkHandler);
 }
 function start() {
 	app.animateIn();
@@ -53,6 +54,11 @@ window.addEventListener('keydown', function(ev) {
 });
 
 function updatePageHandler() {
+	if (appModel.prevPage === 'works') {
+		works.close();
+		app.worksAnimateOut();
+	}
+
 	if (appModel.page === 'about') {
 		TweenMax.set(aboutDom, { display: 'block' });
 		TweenMax.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
@@ -77,4 +83,8 @@ function clickCloseDomHandler(event) {
 	if (appModel.page == 'about' && !appModel.isPageTransition) {
 		appModel.page = 'home';
 	}
+}
+
+function closeWorkHandler() {
+	if (appModel.page == 'works' && !appModel.isPageTransition) appModel.page = 'home';
 }

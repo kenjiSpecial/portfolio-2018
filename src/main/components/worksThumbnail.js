@@ -70,10 +70,7 @@ export class WorksThumbnail extends EventEmitter {
 			this._thumbnails.push(thumbnail);
 		}
 
-		this._thumbnails[appModel.curWorkNum].animateIn();
-		TweenMax.delayedCall(1.2, () => {
-			this._isMouseEnable = true;
-		});
+		this._animateInWorkThumbnail();
 	}
 
 	_mouseDownHandler(event) {
@@ -145,7 +142,11 @@ export class WorksThumbnail extends EventEmitter {
 		window.addEventListener('mousedown', this._mouseDownHandler);
 	}
 
-	_removeMouseEvent() {}
+	_removeMouseEvent() {
+		window.removeEventListener('mousedown', this._mouseDownHandler);
+		window.removeEventListener('mousemove', this._mouseMoveHandler);
+		window.removeEventListener('mouseup', this._mouseUpHandler);
+	}
 
 	render(camera, mouse) {
 		this._time += 1 / 60;
@@ -158,10 +159,25 @@ export class WorksThumbnail extends EventEmitter {
 			this._loader.render(camera, this._modelMatrix, mouse, this._time);
 		}
 	}
+	_animateInWorkThumbnail() {
+		this._thumbnails[appModel.curWorkNum].animateIn();
+		TweenMax.delayedCall(1.2, () => {
+			this._isMouseEnable = true;
+		});
+	}
 	animateIn() {
 		if (!appModel.isLoaded) this._loader.animateIn();
+		else this._animateInWorkThumbnail();
 
 		this._setMouseEvent();
+	}
+	animateOut() {
+		this._thumbnails[appModel.curWorkNum].animateOut();
+		TweenMax.delayedCall(1.2, () => {
+			this._isMouseEnable = false;
+		});
+
+		this._removeMouseEvent();
 	}
 	addGui(gui) {
 		this._testAnimateIn = this._testAnimateIn.bind(this);

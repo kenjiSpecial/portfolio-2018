@@ -73,7 +73,8 @@ export class Home extends EventEmitter {
 	}
 
 	backToHome() {
-		this._aboutTransitionShape.backToHome();
+		if (appModel.prevPage === 'about') this._aboutTransitionShape.backToHome();
+		else this._workTransitionShape.backToHome();
 	}
 
 	setPosition(x, y, z) {

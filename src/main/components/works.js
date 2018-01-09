@@ -15,7 +15,7 @@ class Works extends EventEmitter {
 	constructor() {
 		super();
 
-		this._closeDom = document.getElementById('works-close-btn');
+		this._closeDom = document.getElementsByClassName('works-close-btn')[0];
 		this._works = document.getElementById('works');
 		this._worksDescriptions = document.getElementsByClassName('works-descriptions')[0];
 		this._worksFooter = document.getElementsByClassName('works-footer')[0];
@@ -47,6 +47,9 @@ class Works extends EventEmitter {
 		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
 
 		TweenMax.to(this._works, 1.5, { opacity: 1, delay: delay, ease: Quint.easeInOut });
+	}
+	fadeOut(delay = 0) {
+		TweenMax.to(this._works, 1, { opacity: 0, display: 'none', ease: Quint.easeOut });
 	}
 	_updateWorkHandler() {
 		TweenMax.to(this._titles[appModel.prevWorkNum], 0.3, { display: 'none', opacity: 0 });
@@ -80,8 +83,7 @@ class Works extends EventEmitter {
 		this.imageloadedHandler = this.imageloadedHandler.bind(this);
 		this._updateWorkHandler = this._updateWorkHandler.bind(this);
 		this._clickBtnHandler = this._clickBtnHandler.bind(this);
-		// this._clickNextWorkHandler = this._clickNextWorkHandler.bind(this);
-		// this._clickPrevWorkHandler = this._clickPrevWorkHandler.bind(this);
+		this._clickCloseDomHandler = this._clickCloseDomHandler.bind(this);
 
 		appModel.addListener('image:loaded', this.imageloadedHandler);
 		appModel.addListener('uupdteWork', this._updateWorkHandler);
@@ -95,6 +97,7 @@ class Works extends EventEmitter {
 
 		prevButton.addEventListener('click', this._clickNextWorkHandler);
 		nextButton.addEventListener('click', this._clickPrevWorkHandler);
+		this._closeDom.addEventListener('click', this._clickCloseDomHandler);
 	}
 	_clickBtnHandler(workNum) {
 		if (workNum === appModel.curWorkNum || this._isAnimation) return;
@@ -122,6 +125,13 @@ class Works extends EventEmitter {
 		TweenMax.delayedCall(0.6, () => {
 			this._isAnimation = false;
 		});
+	}
+	_clickCloseDomHandler() {
+		this.trigger('closeWorkHandler');
+	}
+	close() {
+		console.log('fadeOut');
+		this.fadeOut();
 	}
 }
 

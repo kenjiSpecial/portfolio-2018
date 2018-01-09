@@ -47,5 +47,6 @@ export class WorksThumbnail extends EventEmitter {
 	animateIn() {
 		this._loader.animateIn();
 	}
+
 	resize() {}
 }
