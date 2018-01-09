@@ -11,60 +11,8 @@ import {
 } from 'tubugl-constants';
 import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
 
-const vertexShaderSrc = `
-attribute vec4 position;
-attribute vec3 theta;
-attribute vec2 thetaVel;
-attribute vec3 color;
-attribute vec3 color2;
-attribute vec3 initPosition;
-
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
-uniform float uTime;
-uniform vec2 uMouse;
-uniform float uTrans;
-
-varying float vPositionZ;
-varying vec3 vColor;
-varying vec3 vColor2;
-varying float vAlpha;
-void main() {
-	vColor = color;
-	vColor2 = color2;
-	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
-	float rad = theta.z;
-	float introProgress = clamp(2.0 * uTrans - thetaVel.y, 0.0, 1.0);
-	vec3 transVec = initPosition * (1.0 - introProgress);
-	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
-	vec2 pos = vec2(0.0);
-	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix *  ( vec4(pos.xy + position.xy , position.z * vPositionZ , 0.0)  + vec4(transVec, 0.0) + vec4(0.0, 0.0, 0.0, 1.0));
-	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
-	float mTheta = atan(dMouse.y, dMouse.x);
-	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
-	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
-	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
-	
-	vPositionZ =  vPositionZ * (scale * 15.  + 1.0);
-}`;
-
-export const fragmentShaderSrc = `
-precision mediump float;
-
-varying float vPositionZ;
-varying vec3 vColor;
-varying vec3 vColor2;
-varying float vAlpha;
-void main() {
-	if(vAlpha < 0.001) discard;
-    vec3 color =  mix(vColor2, vColor, vPositionZ * 2. - 0.5);
-    
-    gl_FragColor = vec4(color, vAlpha);
-
-}`;
+const vertexShaderSrc = require('./shaders/normalShape.vert');
+const fragmentShaderSrc = require('./shaders/normalShape.frag');
 
 export class NormalShape {
 	constructor(gl) {
@@ -97,7 +45,6 @@ export class NormalShape {
 		};
 		let introRad = randomFloat(0, 1);
 		indice.forEach((index, num) => {
-			// console.log(index);
 			this._coords.push(coords[3 * index], coords[3 * index + 1], coords[3 * index + 2]);
 			center.x += coords[3 * index] / 3;
 			center.y += coords[3 * index + 1] / 3;
@@ -109,18 +56,6 @@ export class NormalShape {
 			);
 
 			this._thetaVelocities.push(thetaVelocityArr[2 * index + 0], introRad);
-			// if (num % 3 == 0) {
-			// 	let dis = Math.sqrt(center.x * center.x + center.y * center.y) / 100;
-			// 	dis = clamp(dis, 0, 1);
-
-			// 	// console.log(2 * num, this._thetaVelocities.length - 1);
-
-			// 	this._thetaVelocities[this._thetaVelocities.length - 1] = 10;
-			// 	this._thetaVelocities[this._thetaVelocities.length - 1 - 2] = 10;
-			// 	this._thetaVelocities[this._thetaVelocities.length - 4] = 10;
-			// 	// 	console.log(dis);
-			// 	center = { x: 0, y: 0 };
-			// }
 		});
 	}
 	initialize() {

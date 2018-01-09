@@ -1,12 +1,9 @@
 const EventEmitter = require('wolfy87-eventemitter');
 import { mat4 } from 'gl-matrix/src/gl-matrix';
-import {
-	textureBaseShaderFragSrc,
-	uvBaseShaderVertSrc,
-	wireFrameFragSrc,
-	baseShaderVertSrc,
-	shaderVertSrc
-} from './shaders/base.shader';
+
+const vertSrc = require('./shaders/thumbnailPlane.vert');
+const fragSrc = require('./shaders/thumbnailPlane.frag');
+
 import { Program, ArrayBuffer, IndexArrayBuffer, VAO } from 'tubugl-core';
 import {
 	CULL_FACE,
@@ -59,11 +56,6 @@ export class ThumbnailPlane extends EventEmitter {
 
 		this._makeProgram(params);
 		this._makeBuffer();
-
-		if (this._isWire) {
-			this._makeWireframe();
-			this._makeWireframeBuffer();
-		}
 	}
 
 	setPosition(x, y, z) {
@@ -87,11 +79,7 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	_makeProgram(params) {
-		this._program = new Program(this._gl, uvBaseShaderVertSrc, textureBaseShaderFragSrc);
-	}
-
-	_makeWireframe() {
-		this._wireframeProgram = new Program(this._gl, baseShaderVertSrc, wireFrameFragSrc);
+		this._program = new Program(this._gl, vertSrc, fragSrc);
 	}
 
 	_makeBuffer() {
@@ -124,14 +112,6 @@ export class ThumbnailPlane extends EventEmitter {
 		this._uvBuffer.setAttribs('uv', 2);
 
 		this._cnt = indices.length;
-	}
-
-	_makeWireframeBuffer() {
-		this._wireframeIndexBuffer = new IndexArrayBuffer(
-			this._gl,
-			generateWireframeIndices(this._indexBuffer.dataArray)
-		);
-		this._wireframeIndexCnt = this._wireframeIndexBuffer.dataArray.length;
 	}
 
 	_updateAttributres() {
@@ -258,16 +238,6 @@ export class ThumbnailPlane extends EventEmitter {
 		rotationFolder.add(this.rotation, 'x', -Math.PI, Math.PI).step(0.01);
 		rotationFolder.add(this.rotation, 'y', -Math.PI, Math.PI).step(0.01);
 		rotationFolder.add(this.rotation, 'z', -Math.PI, Math.PI).step(0.01);
-
-		gui
-			.add(this, '_isWire')
-			.name('isWire')
-			.onChange(() => {
-				if (this._isWire && !this._wireframeProgram) {
-					this._makeWireframe();
-					this._makeWireframeBuffer();
-				}
-			});
 	}
 
 	updateRandom() {
