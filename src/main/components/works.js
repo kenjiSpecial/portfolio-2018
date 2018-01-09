@@ -50,7 +50,7 @@ class Works extends EventEmitter {
 	animateOut() {}
 	resizeHandler() {
 		TweenMax.set(this._worksDescriptions, {
-			x: window.innerWidth / 2 - 300,
+			x: window.innerWidth / 2 - 350,
 			y: window.innerHeight / 2 - 100
 		});
 
@@ -58,6 +58,13 @@ class Works extends EventEmitter {
 			x: window.innerWidth / 2 - 250,
 			y: window.innerHeight / 2 + 260
 		});
+
+		// min < 640
+		let minSide = Math.min(window.innerWidth, window.innerHeight);
+		let scale = minSide / 640;
+	}
+	resize() {
+		this.resizeHandler();
 	}
 	imageloadedHandler() {
 		this.fadeIn(0.2);

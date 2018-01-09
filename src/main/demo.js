@@ -46,6 +46,7 @@ function start() {
 
 window.addEventListener('resize', function() {
 	app.resize(window.innerWidth, window.innerHeight);
+	works.resize(window.innerWidth, window.innerHeight);
 });
 
 window.addEventListener('keydown', function(ev) {
