@@ -12,80 +12,8 @@ import {
 } from 'tubugl-constants';
 import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
 
-const vertexShaderSrc = `
-attribute vec4 position;
-attribute vec3 theta;
-attribute vec2 thetaVel;
-attribute vec3 color;
-attribute vec3 color2;
-attribute vec3 initPosition;
-
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
-uniform float uTime;
-uniform vec2 uMouse;
-uniform float uTrans;
-
-varying float vPositionZ;
-varying vec3 vColor;
-varying vec3 vColor2;
-varying float vAlpha;
-varying vec2 vPos;
-
-uniform bool uRollover;
-
-void main() {
-	vColor = color;
-	vColor2 = color2;
-	
-	vPositionZ = clamp(( (sin(theta.x + 3.0 * uTime * thetaVel.x) + 1.0)) * 0.5, 0.0, 1.0);
-	float rad = theta.z;
-	float introProgress = clamp(4.0 * uTrans - thetaVel.y, 0.0, 1.0);
-	vec3 transVec = initPosition * (1.0 - introProgress);
-	vAlpha = clamp(introProgress * 2.0 - 1.0, 0.0, 1.0); //clamp(2.0 * uTrans, 0.0, 1.0);
-
-	vPos = position.xy;
-	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix *  ( vec4( position.xy , position.z * vPositionZ , 0.0)  + vec4(transVec, 0.0) + vec4(0.0, 0.0, 0.0, 1.0));
-	vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
-	float mTheta = atan(dMouse.y, dMouse.x);
-	float dis = length(dMouse);
-	float scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.24 * clamp( 2.0 * length(uMouse) - 0.3, 0.12, 1.0);
-	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
-	gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
-	
-	vPositionZ =  vPositionZ * (scale * 15.  + 1.0);
-}`;
-
-function fragmentShaderSrc(yPos) {
-	return `
-precision mediump float;
-
-varying float vPositionZ;
-varying vec3 vColor;
-varying vec3 vColor2;
-varying float vAlpha;
-varying vec2 vPos;
-
-uniform bool uRollover;
-uniform float uRolloverTrans;
-uniform float uRolloutTrans;  
-
-void main() {
-	if(vAlpha < 0.001) discard;
-	vec3 color;
-	float rate = clamp(abs(vPos.y - ${yPos}.)/6., 0.0, 1.0);
-	float trans = clamp(2.0 * uRolloverTrans - (vPos.x + 50.)/100., 0.0, 1.0) ;
-	if(trans < 0.8) trans = 0.0;
-	if(trans * (1.0 - rate) < 0.8) trans  = 0.0;
-
-	color =  mix( mix( vColor2 , vColor, (vPositionZ * 2. - 0.5) ), vec3(0.95),  trans * (1.0 -  rate) * (1.0 - uRolloutTrans));
-	
-	gl_FragColor = vec4(color, vAlpha);
-
-}`;
-}
+const vertexShaderSrc = require('./shaders/interactiveShape.vert');
+const fragmentShaderSrc = require('./shaders/interactiveShape.frag');
 
 export class InteractiveShape extends EventEmitter {
 	/**
@@ -108,12 +36,15 @@ export class InteractiveShape extends EventEmitter {
 		this._isRollover = false;
 		this._rollOverrate = 0;
 		this._rolloutrate = 0;
+		this._minArea = 999999;
+		this._maxArea = -this._minArea;
 		this._coords = [];
 		this._colors = [];
 		this._color2s = [];
 		this._thetas = [];
 		this._thetaVelocities = [];
 		this._initPositionArr = [];
+		this._areas = [];
 		this._interactiveArea = null;
 	}
 
@@ -135,8 +66,11 @@ export class InteractiveShape extends EventEmitter {
 		let side2 = Math.sqrt(dX20 * dX20 + dY20 * dY20);
 		let sp = (side0 + side1 + side2) / 2;
 		let area = Math.sqrt(sp * (sp - side0) * (sp - side1) * (sp - side2));
-		let mixRate = 1.0 - clamp((area - 0.6) * 5.0, 0.0, 1.0);
+		let mixRate = 1.0 - clamp((area - 0.6) * 6.0, 0.0, 1.0);
 		let center = (x0 + x1 + x2) / 3;
+
+		if (this._minArea > area) this._minArea = area;
+		if (this._maxArea < area) this._maxArea = area;
 
 		let randX = randomFloat(0, 0),
 			randY = randomFloat(0, 0),
@@ -156,6 +90,8 @@ export class InteractiveShape extends EventEmitter {
 				randY + randomFloat(-10, 10),
 				randZ
 			);
+
+			this._areas.push(area);
 		}
 
 		let introRad = center / 30 + 1.8;
@@ -198,6 +134,10 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	_makeAttribuetes() {
+		this._areas.forEach((area, index) => {
+			this._areas[index] = (area - this._minArea) / (this._maxArea - this._minArea);
+		});
+
 		this._positionBuffer = new ArrayBuffer(this._gl, new Float32Array(this._coords));
 		this._positionBuffer.setAttribs('position', 3);
 
@@ -222,12 +162,14 @@ export class InteractiveShape extends EventEmitter {
 		);
 		this._thetaVelocityBuffer.setAttribs('thetaVel', 2);
 
+		this._areaBuffer = new ArrayBuffer(this._gl, new Float32Array(this._areas));
+		this._areaBuffer.setAttribs('area', 1);
+
 		this._cnt = this._positionBuffer.dataArray.length / 3;
 	}
 
 	_makeProgram() {
-		let yPos = this.name == 'about' ? 15 : -15;
-		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc(yPos));
+		this._program = new Program(this._gl, vertexShaderSrc, fragmentShaderSrc);
 	}
 
 	_updateAttributres() {
@@ -240,57 +182,11 @@ export class InteractiveShape extends EventEmitter {
 			this._colorBuffer.bind().attribPointer(this._program);
 			this._color2Buffer.bind().attribPointer(this._program);
 			this._initPositionBuffer.bind().attribPointer(this._program);
+			this._areaBuffer.bind().attribPointer(this._program);
 		}
 	}
 
-	_checkRollover(mouse) {
-		let prevRollover = this._isRollover;
-		if (
-			this._area.left < mouse.windowX &&
-			this._area.right > mouse.windowX &&
-			this._area.top < mouse.windowY &&
-			this._area.bottom > mouse.windowY
-		) {
-			this._isRollover = true;
-		} else {
-			this._isRollover = false;
-		}
-		// return;
-
-		// if (this._isRollover && !prevRollover) {
-		// 	TweenLite.killTweensOf([this._rollOverrate, this._rolloutrate]);
-		// 	if (this._rolloutrate == 0.0) {
-		// 		TweenLite.fromTo(
-		// 			this,
-		// 			1,
-		// 			{ _rollOverrate: 0 },
-		// 			{
-		// 				_rollOverrate: 1.0,
-		// 				ease: Quint.easeOut
-		// 			}
-		// 		);
-		// 	} else {
-		// 		TweenLite.to(this, 0.4, {
-		// 			_rolloutrate: 0.0
-		// 		});
-		// 		TweenLite.fromTo(
-		// 			this,
-		// 			1.2,
-		// 			{
-		// 				_rollOverrate: 0.0
-		// 			},
-		// 			{
-		// 				_rollOverrate: 1.0,
-		// 				ease: Quint.easeOut
-		// 			}
-		// 		);
-		// 	}
-		// } else if (!this._isRollover && prevRollover) {
-		// 	TweenLite.to(this, 0.6, {
-		// 		_rolloutrate: 1.0
-		// 	});
-		// }
-	}
+	_checkRollover(mouse) {}
 	render(camera, modelMatrix, introRate, mouse, time) {
 		this.update(camera, modelMatrix, introRate, mouse, time).draw();
 	}
@@ -319,11 +215,7 @@ export class InteractiveShape extends EventEmitter {
 		this._gl.uniform1f(this._program.getUniforms('uTrans').location, introRate);
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uTime').location, time);
-		this._gl.uniform1f(
-			this._program.getUniforms('uRolloverTrans').location,
-			this._rollOverrate
-		);
-		this._gl.uniform1f(this._program.getUniforms('uRolloutTrans').location, this._rolloutrate);
+
 		return this;
 	}
 

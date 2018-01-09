@@ -172,13 +172,15 @@ export default class App {
 		this.canvas.height = this._height;
 		this.gl.viewport(0, 0, this._width, this._height);
 
-		this._home.resize(this._width, this._height);
-		var tanFOV = Math.tan(Math.PI / 180 * 60 / 2);
+		let tanFOV = Math.tan(Math.PI / 180 * 60 / 2);
 		this._camera.updateFov(
 			360 / Math.PI * Math.atan(tanFOV * (window.innerHeight / WinHeight)),
 			false
 		);
 		this._camera.updateSize(this._width, this._height);
+
+		this._home.resize(this._width, this._height);
+		this._worksThumbnail.resize();
 	}
 
 	destroy() {}

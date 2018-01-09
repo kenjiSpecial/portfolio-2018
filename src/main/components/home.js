@@ -39,6 +39,7 @@ export class Home extends EventEmitter {
 		this._gl = gl;
 		this._side = params.side ? params.side : 'double'; // 'front', 'back', 'double'
 		this._introRate = 0;
+		this._introMainTitleRate = 0;
 
 		this._width = width;
 		this._height = height;
@@ -60,16 +61,8 @@ export class Home extends EventEmitter {
 		this.isRollover = this.isPrevRollover = false;
 	}
 	startIntro() {
-		TweenMax.fromTo(
-			this,
-			4,
-			{
-				_introRate: 0
-			},
-			{
-				_introRate: 1
-			}
-		);
+		TweenMax.to(this, 4, { _introRate: 1 });
+		TweenMax.to(this, 3, { _introMainTitleRate: 1 });
 	}
 
 	backToHome() {
@@ -244,8 +237,20 @@ export class Home extends EventEmitter {
 		else this._time += 1 / 500;
 
 		this._normalShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
-		this._aboutShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
-		this._worksShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
+		this._aboutShape.render(
+			camera,
+			this._modelMatrix,
+			this._introMainTitleRate,
+			mouse,
+			this._time
+		);
+		this._worksShape.render(
+			camera,
+			this._modelMatrix,
+			this._introMainTitleRate,
+			mouse,
+			this._time
+		);
 		this._transitionShapes.forEach(transitionShape => {
 			transitionShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
 			if (transitionShape.getRollOVer()) isRollover = true;
