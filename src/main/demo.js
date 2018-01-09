@@ -1,5 +1,7 @@
 'use strict';
 
+import './main.scss';
+
 import App from './app';
 import { appModel } from './components/model/appModel';
 import { imageloader } from './components/util/imageloader';

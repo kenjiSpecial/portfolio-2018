@@ -80,11 +80,11 @@ varying float vScale;
 varying float vAlpha;
 
 void main(){
-    float posX = position.x + uSide * (1.0 - uTransIn);
+    float posX = position.x + uSide * (1.0 - uTransIn) + uv.x * 120. * (1.0 - uTransIn);
     float posY = position.y - uRandY0 * (1.0 - uTransIn) * uv.x; 
     float posZ = position.z - 500. * (1.0 - uTransIn) * uv.x;
     
-    posX = posX - uTransOut * uSide ;
+    posX = posX - uTransOut * uSide - (1.0 - uv.x) * 120. *uTransOut;
     posY = posY - uRandY1 * uTransOut * (1.0 - uv.x);
     posZ = posZ - 500. * uTransOut * (1.0 - uv.x);
 
@@ -96,10 +96,10 @@ void main(){
     float dis = length(dMouse);
 
     float scale;
-    if(dis < 0.02){
-        scale = dis/0.02 * 0.12 * max(dis * 2.0, 1.0);    
+    if(dis < 0.05){
+        scale = dis/0.05 * 0.12 * max(dis * 2.0, 1.0);    
     }else{
-        scale =(1.0 - clamp( dis - 0.02 , 0.0, 1.0)) * 0.12 * max(dis * 2.0, 1.0);
+        scale =(1.0 - clamp( dis - 0.05 , 0.0, 1.0)) * 0.2 * max(dis * 0.5, 1.0);
     }
     
     
@@ -107,7 +107,7 @@ void main(){
     gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
     
     vAlpha = clamp(uTransIn * 2.0 - vUv.x, 0.0, 1.0) * clamp(1.0 + vUv.x- 2.0 * uTransOut, 0.0, 1.0 );
-    vScale = dis;
+    vScale = dis * 3.;
 }
 `;
 
@@ -121,11 +121,11 @@ varying float vAlpha;
 
 varying float vScale;
 void main(){
-    if(vAlpha < 0.001) discard;
+    // if(vAlpha < 0.001) discard;
     
     gl_FragColor = texture2D(uTexture, vUv);
-    gl_FragColor.rgb = gl_FragColor.rgb + vec3( (clamp((1.0 - vScale/0.2), 0.0, 1.0) * 0.2 ));
-    gl_FragColor.a *= vAlpha ;
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0),  clamp(1.0 - vScale * 2.0, 0.0, 1.0)) ;
+    gl_FragColor.a *= vAlpha  * clamp(vScale /2., 0.0, 1.0);
 }
 `;
 

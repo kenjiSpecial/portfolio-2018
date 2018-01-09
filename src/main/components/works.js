@@ -3,6 +3,13 @@ require('gsap');
 
 import { appModel } from './model/appModel';
 import { imageloader } from './util/imageloader';
+import { TweenMax } from 'gsap';
+
+const urls = [
+	'https://www.g-star.com/en_gb/elwood',
+	'https://thefwa.com/cases/adidas-ultraboost-all-terrain-p3',
+	'https://www.southwestheartoftravel.com/awards/'
+];
 
 class Works extends EventEmitter {
 	constructor() {
@@ -14,6 +21,7 @@ class Works extends EventEmitter {
 		this._worksFooter = document.getElementsByClassName('works-footer')[0];
 		this._titles = document.getElementsByClassName('works-name');
 		this._worksBtns = document.getElementsByClassName('works-list-btn');
+		this._indivWorkUrl = document.getElementById('works-indiv-work-link');
 
 		this._setEvent();
 		this.resizeHandler();
@@ -31,6 +39,7 @@ class Works extends EventEmitter {
 		}
 	}
 	fadeIn(delay = 0) {
+		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
 		TweenMax.set(this._works, { display: 'block' });
 
 		this._titles[appModel.curWorkNum].style.display = 'block';
@@ -46,6 +55,8 @@ class Works extends EventEmitter {
 		TweenMax.set(this._titles[appModel.curWorkNum], { display: 'block' });
 		TweenMax.to(this._titles[appModel.curWorkNum], 0.3, { opacity: 1, delay: 0.2 });
 		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
+
+		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
 	}
 	animateOut() {}
 	resizeHandler() {
@@ -69,17 +80,48 @@ class Works extends EventEmitter {
 		this.imageloadedHandler = this.imageloadedHandler.bind(this);
 		this._updateWorkHandler = this._updateWorkHandler.bind(this);
 		this._clickBtnHandler = this._clickBtnHandler.bind(this);
+		// this._clickNextWorkHandler = this._clickNextWorkHandler.bind(this);
+		// this._clickPrevWorkHandler = this._clickPrevWorkHandler.bind(this);
 
 		appModel.addListener('image:loaded', this.imageloadedHandler);
 		appModel.addListener('uupdteWork', this._updateWorkHandler);
 
+		let prevButton = document.getElementsByClassName('works-navigation-prev')[0];
+		let nextButton = document.getElementsByClassName('works-navigation-next')[0];
+
 		for (let ii = 0; ii < this._worksBtns.length; ii++) {
 			this._worksBtns[ii].addEventListener('click', this._clickBtnHandler.bind(this, ii));
 		}
+
+		prevButton.addEventListener('click', this._clickNextWorkHandler);
+		nextButton.addEventListener('click', this._clickPrevWorkHandler);
 	}
 	_clickBtnHandler(workNum) {
-		if (workNum === appModel.curWorkNum) return;
+		if (workNum === appModel.curWorkNum || this._isAnimation) return;
+		this._isAnimation = true;
 		appModel.showWork(workNum);
+
+		TweenMax.delayedCall(0.6, () => {
+			this._isAnimation = false;
+		});
+	}
+	_clickPrevWorkHandler() {
+		if (this._isAnimation) return;
+		this._isAnimation = true;
+		appModel.showPrevWork();
+
+		TweenMax.delayedCall(0.6, () => {
+			this._isAnimation = false;
+		});
+	}
+	_clickNextWorkHandler() {
+		if (this._isAnimation) return;
+		this._isAnimation = true;
+		appModel.showNextWork();
+
+		TweenMax.delayedCall(0.6, () => {
+			this._isAnimation = false;
+		});
 	}
 }
 

@@ -1,0 +1,221 @@
+@import "scss/normalize";
+
+
+$gray: #888888;
+
+html,
+body {
+    font-family: 'Roboto', sans-serif;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+
+a {
+    transition: color 0.4s ease;
+    text-decoration: none;
+    color: #6666FF;
+}
+
+a:hover {
+    text-decoration: none;
+    color: #3333FF;
+}
+
+#main {
+    display: block;
+}
+
+#about,
+#works {
+    -webkit-user-select: none;
+    /* Chrome all / Safari all */
+    -moz-user-select: none;
+    /* Firefox all */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+
+    display: none;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.about-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.about-content {
+    display: block;
+    max-width: 720px;
+    padding-right: 30px;
+    padding-left: 30px;
+    margin: auto;
+}
+
+.about-p {
+    margin-bottom: 10px;
+}
+
+canvas {
+    display: block;
+}
+
+.about-close {
+    margin: auto;
+}
+
+.about-svg,
+.about-close-svg,
+.works-close-svg {
+    height: 24px;
+    display: inline-block;
+    transition: fill 0.4s ease;
+    fill: #888888;
+}
+
+.about-svg:hover,
+.about-close-svg:hover,
+.works-close-svg:hover {
+    fill: #6666FF;
+}
+
+.about-svg {
+    margin-right: 14px;
+}
+
+.about-close-svg,
+.works-close-btn {
+    cursor: pointer;
+    display: block;
+    margin: auto;
+}
+
+.about-svg-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.about-svg-container a {
+    text-decoration: none;
+}
+
+.works-descriptions,
+.works-footer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.works-name-list {
+    position: relative;
+    height: 24px;
+    margin-bottom: 19px;
+    margin-top: -6px;
+    .works-name{
+        white-space: nowrap;
+        font-size: 24px;
+    }
+}
+
+.works-name {
+    display: none;
+    position: absolute;
+}
+
+.works-list-btn {
+    color: #6666FF;
+    transition: color 0.4s ease;
+    cursor: pointer;
+    &:hover {
+        text-decoration: none;
+        color: #3333FF;
+    }
+}
+
+
+.works-list-btn.selected {
+    color: #000;
+    cursor: default;
+    &:hover {
+        color: #000;
+    }
+}
+.works-description-content, .works-navigation{
+    vertical-align: top;
+    display: inline-block;
+}
+
+.works-navigation-prev, .works-navigation-next{
+    width: 32px;
+    height: 20px;
+    cursor: pointer;
+    &:hover{
+        .works-navigation-svg{
+            fill: #6666FF;
+        }
+    }
+    
+}
+
+.works-navigation-prev{
+    margin-bottom: 36px;
+}
+
+.works-navigation-svg{
+    display: inline-block;
+    margin-left: 10px;
+
+    fill: $gray;
+    transition: fill 0.4s ease;
+        
+}
+
+
+.works-category{
+    display: inline-block;
+}
+
+.works-category-holder{
+    margin-bottom: 2px;
+}
+
+.works-type{
+    margin-bottom: 12px;
+}
+
+.works-category{
+    margin-right: 19px;
+}
+
+.works-list-all{
+    margin-bottom: 3px;
+}
+
+.works-list-title, .works-list-btn{
+    margin-right: 15px;
+}
+
+.works-close-btn{
+    width: 512px;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.works-close-svg{
+    display: block;
+    margin: auto;
+}

@@ -8,7 +8,7 @@ class AppModel extends EventEmitter {
 		this.isInit = false;
 		this._curWorkNum = this.prevWorkNum = 0;
 
-		this._page = this.prevPage = 'works';
+		this._page = this.prevPage = 'home';
 		this._isRollover = this.isPrevRollover = false;
 	}
 	animationDone() {
@@ -51,6 +51,17 @@ class AppModel extends EventEmitter {
 
 	get curWorkNum() {
 		return this._curWorkNum;
+	}
+
+	showWork(num) {
+		this.trigger('showWork', [num]);
+		// this.curWorkNum = num;
+	}
+	showNextWork() {
+		this.trigger('showNextWork');
+	}
+	showPrevWork() {
+		this.trigger('showPrevWork');
 	}
 }
 

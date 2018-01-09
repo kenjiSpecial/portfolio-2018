@@ -1,145 +1,6 @@
 <html>
 <meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-<style>
-    * {
-        margin: 0;
-    }
-
-    html,
-    body {
-        font-family: 'Roboto', sans-serif;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    #tubugl-desc {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        color: #aaaaaa;
-        font-size: 12px;
-        line-height: 1.5em;
-    }
-
-    a {
-        transition: color 0.4s ease;
-        text-decoration: underline;
-        color: #6666FF;
-    }
-
-    a:hover {
-        text-decoration: underline;
-        color: #3333FF;
-    }
-
-    #main {
-        display: block;
-    }
-
-    #about,
-    #works {
-        display: none;
-        opacity: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    .about-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        flex-direction: column;
-        box-sizing: border-box;
-    }
-
-    .about-content {
-        display: block;
-        max-width: 720px;
-        padding-right: 30px;
-        padding-left: 30px;
-        margin: auto;
-    }
-
-    .about-p {
-        margin-bottom: 10px;
-    }
-
-    canvas {
-        display: block;
-    }
-
-    .about-close {
-        margin: auto;
-    }
-
-    .about-svg,
-    .about-close-svg,
-    .works-close-svg {
-        height: 24px;
-        display: inline-block;
-        transition: fill 0.4s ease;
-        fill: #888888;
-    }
-
-    .about-svg:hover,
-    .about-close-svg:hover,
-    .works-close-svg:hover {
-        fill: #6666FF;
-    }
-
-    .about-svg {
-        margin-right: 14px;
-    }
-
-    .about-close-svg,
-    .works-close-btn {
-        cursor: pointer;
-        display: block;
-        margin: auto;
-    }
-
-    .about-svg-container {
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    .about-svg-container a {
-        text-decoration: none;
-    }
-
-    .works-descriptions, .works-footer{
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-    .works-name-list{
-        position: relative;
-        height: 24px;
-    }
-    .works-name{
-        display: none;
-        position: absolute;
-    }
-    
-    .works-list-btn{
-        color: #6666FF;
-        transition: color 0.4s ease;
-        cursor: pointer;
-    }
-    
-    .works-list-btn.selected{
-        color: #000;
-        cursor: default;
-    }
-    
-</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 
 <body>
@@ -205,6 +66,18 @@
     <div id="works">
         <div class="works-container">
             <div class="works-descriptions">
+                <div class="works-navigation">
+                    <div class="works-navigation-prev">
+                        <svg class="works-navigation-svg" height="12" width="14">
+                            <polygon points="7,0 14,12 0,12"  />
+                        </svg>
+                    </div>
+                    <div class="works-navigation-next">
+                        <svg class="works-navigation-svg" height="12" width="14">
+                            <polygon points="0,0 14,0 7,12" />
+                        </svg>
+                    </div>
+                </div>
                 <div class="works-description-content">
                     <div class="works-name-list">
                         <div class="works-name">G-Star ELWood</div>
@@ -214,7 +87,7 @@
                     <div class="works-type">
                         <div class="works-category">
                             <div class="works-category-holder">ROLE:</div>
-                            <div class="works-category-name">WebGL</div>
+                            <div class="works-category-name">WebGL Development</div>
                         </div>
                         <div class="works-category">
                             <div class="works-category-holder">TECHNOLOGY:</div>
@@ -222,7 +95,7 @@
                         </div>
                     </div>
                     <div class="works-links">
-                        <a>VISIT SITE</a>
+                        <a id="works-indiv-work-link" target="_blank">VISIT SITE</a>
                     </div>
                 </div>
             </div>
@@ -231,15 +104,15 @@
                     <div class="works-list-all">
                         <span class="works-list-title"> Selected works:</span>
                         <span class="works-list-btn">G-Star</span>
-                        <span class="works-list-btn">adidas UltraBoost</span>
+                        <span class="works-list-btn">adidas</span>
                         <span class="works-list-btn">Heart of Travel</span>
                     </div>
                     <div class="works-archive">
-                        More Works And Experiments from
-                        <a href="">here</a>
+                        More works and experiments from
+                        <a  href="http://archive.kenji-special.info" target="_blank">here</a>
                     </div>
                 </div>
-                <div id="works-close-btn" class="aboug-close">
+                <div class="works-close-btn">
                     <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
                     <svg class="works-close-svg" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                         x="0px" y="0px" viewBox="0 0 52 52" style="enable-background:new 0 0 52 52;" xml:space="preserve">

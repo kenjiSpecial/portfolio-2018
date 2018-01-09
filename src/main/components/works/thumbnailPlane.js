@@ -298,27 +298,46 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	mouseMove(value) {
-		if (value > 0 && this.id === appModel.curWorkNum) {
-			console.log(this.id);
-			this._transInRate = clamp(1 - value, 0.0, 1.0);
-		} else if (value < 0 && this.id === appModel.curWorkNum) {
-			this._transOutRate = clamp(-value, 0.0, 1.0);
+		if (this.id === appModel.curWorkNum) {
+			if (value > 0) {
+				this._transOutRate = 0.0;
+				this._transInRate = clamp(1 - value, 0.0, 1.0);
+			} else if (value < 0) {
+				this._transInRate = 1.0;
+				this._transOutRate = clamp(-value, 0.0, 1.0);
+			}
+
+			// console.log(this.id, this._transInRate, this._transOutRate, '0');
 		}
 
-		if (this.id === (appModel.curWorkNum + 1) % 3 && value < 0) {
-			this._transOutRate = 0.0;
-			this._transInRate = clamp(-value, 0.0, 1.0);
+		if (this.id === (appModel.curWorkNum + 1) % 3) {
+			if (value < 0) {
+				this._transOutRate = 0.0;
+				this._transInRate = clamp(-value, 0.0, 1.0);
+			} else {
+				this._transOutRate = 0.0;
+				this._transInRate = 0.0;
+			}
+
+			// console.log(this.id, this._transInRate, this._transOutRate, '+1');
 		}
 
-		if (this.id === (appModel.curWorkNum + 2) % 3 && value > 0) {
-			this._transInRate = 1.0;
-			this._transOutRate = clamp(1.0 - value, 0.0, 1.0);
+		if (this.id === (appModel.curWorkNum + 2) % 3) {
+			if (value > 0) {
+				this._transInRate = 1.0;
+				this._transOutRate = clamp(1.0 - value, 0.0, 1.0);
+			} else {
+				this._transInRate = 1.0;
+				this._transOutRate = 1.0;
+			}
+
+			// console.log(this.id, this._transInRate, this._transOutRate, '+2');
 		}
 	}
 
-	mouseUp(value) {
+	mouseUp(value = 0.4) {
 		if (this.id === appModel.curWorkNum) {
-			TweenMax.to(this, 0.4, {
+			TweenMax.to(this, value, {
 				_transInRate: 1,
 				_transOutRate: 0,
 				onComplete: () => {
@@ -326,9 +345,9 @@ export class ThumbnailPlane extends EventEmitter {
 				}
 			});
 		} else if (this.id === (appModel.curWorkNum + 1) % 3) {
-			TweenMax.to(this, 0.4, { _transInRate: 0, _transOutRate: 0 });
+			TweenMax.to(this, value, { _transInRate: 0, _transOutRate: 0 });
 		} else {
-			TweenMax.to(this, 0.4, { _transInRate: 1, _transOutRate: 1 });
+			TweenMax.to(this, value, { _transInRate: 1, _transOutRate: 1 });
 		}
 	}
 
