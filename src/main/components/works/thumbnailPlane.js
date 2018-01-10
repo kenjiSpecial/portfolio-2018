@@ -20,7 +20,7 @@ import {
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
-import { Quint, Power2, TweenLite } from 'gsap';
+import { Quint, Power2, TweenLite, TweenMax } from 'gsap';
 import { randomFloat, clamp } from 'tubugl-utils/src/mathUtils';
 import { appModel } from '../model/appModel';
 
@@ -126,7 +126,7 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	render(camera, mouse) {
-		if (this._transInRate == 0.0 || this._transOutRate == 1.0) return;
+		// if (this._transInRate == 0.0 || this._transOutRate == 1.0) return;
 		this.update(camera, mouse).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
@@ -161,7 +161,6 @@ export class ThumbnailPlane extends EventEmitter {
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
-		console.log(this._uWindowRate);
 		this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
 
 		this._texture.activeTexture().bind();
@@ -226,7 +225,18 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	resize() {
+		// console.log(window.innerWidth, window.innerHeight);
 		this._uWindowRate = window.innerWidth / window.innerHeight;
+		// console.log(this._uWindowRate);
+
+		let minSide = Math.min(window.innerWidth, window.innerHeight);
+		let scale = Math.min(minSide / 720, 1.0);
+
+		// mat4.fromScaling(this._modelMatrix, [scale, scale, 1]);
+		this.scale.x = scale;
+		this.scale.y = scale;
+		// console.log(this.scale);
+		// scale;
 	}
 
 	addGui(gui) {
@@ -257,7 +267,7 @@ export class ThumbnailPlane extends EventEmitter {
 		this._transOutRate = 0;
 		TweenMax.fromTo(
 			this,
-			1.2,
+			1.0,
 			{ _transInRate: 0 },
 			{ _transInRate: 1, ease: Power2.easeInOut, delay: 0.3 }
 		);
@@ -291,7 +301,7 @@ export class ThumbnailPlane extends EventEmitter {
 				this._transOutRate = 0.0;
 				this._transInRate = clamp(-value, 0.0, 1.0);
 			} else {
-				this._transOutRate = 0.0;
+				this._transOutRate = clamp(value, 0.0, 1.0);
 				this._transInRate = 0.0;
 			}
 
@@ -303,7 +313,7 @@ export class ThumbnailPlane extends EventEmitter {
 				this._transInRate = 1.0;
 				this._transOutRate = clamp(1.0 - value, 0.0, 1.0);
 			} else {
-				this._transInRate = 1.0;
+				this._transInRate = clamp(1.0 + value, 0.0, 1.0);
 				this._transOutRate = 1.0;
 			}
 
@@ -312,6 +322,8 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	mouseUp(value = 0.4) {
+		// value = 10;
+		TweenMax.killTweensOf([this._transInRate, this._transOutRate]);
 		if (this.id === appModel.curWorkNum) {
 			TweenMax.to(this, value, {
 				_transInRate: 1,

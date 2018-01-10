@@ -43,6 +43,32 @@ export default class App {
 			this._addGui();
 		}
 
+		document.body.addEventListener(
+			'touchmove',
+			event => {
+				let xRate = (event.touches[0].clientX - this._width / 2) / (this._width / 2);
+				let yRate = (-event.touches[0].clientY + this._height / 2) / (this._height / 2);
+
+				this._targetMouse = {
+					x: xRate,
+					y: yRate,
+					windowX: event.touches[0].clientX,
+					windowY: event.touches[0].clientY
+				};
+
+				this._mouse.windowX = this._targetMouse.windowX;
+				this._mouse.windowY = this._targetMouse.windowY;
+
+				let theta = this._targetMouse.x / 10;
+				let phi = this._targetMouse.y / 10;
+				this._targetAngle.theta = theta;
+				this._targetAngle.phi = phi;
+			},
+			{
+				passive: true
+			}
+		);
+
 		document.body.addEventListener('mousemove', event => {
 			let xRate = (event.clientX - this._width / 2) / (this._width / 2);
 			let yRate = (-event.clientY + this._height / 2) / (this._height / 2);

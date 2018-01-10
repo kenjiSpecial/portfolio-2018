@@ -25,19 +25,15 @@ void main(){
     vUv = uv;
     
     vec2 dMouse = vec2(gl_Position.x / gl_Position.w- uMouse.x , gl_Position.y/ gl_Position.w - uMouse.y);
-    dMouse.y = dMouse.y / uWindowRate;
+    float scaleRate = uWindowRate;
+    dMouse.y = dMouse.y  / ( scaleRate );
 	float mTheta = atan(dMouse.y, dMouse.x);
     float dis = length(dMouse);
     float scale;
-    if(dis < 0.05){
-        scale = dis/0.05 * 0.12 * max(dis * 2.0, 1.0);    
-    }else{
-        scale =(1.0 - clamp( dis - 0.05 , 0.0, 1.0)) * 0.2 * max(dis * 0.5, 1.0);
-    }
-    
+    scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.1;
     
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
-    gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
+    gl_Position.y = gl_Position.y + scale * scaleRate * sin(mTheta) * gl_Position.w;
     
     vAlpha = clamp(uTransIn * 2.0 - vUv.x, 0.0, 1.0) * clamp(1.0 + vUv.x- 2.0 * uTransOut, 0.0, 1.0 );
     vScale = dis * 3.;

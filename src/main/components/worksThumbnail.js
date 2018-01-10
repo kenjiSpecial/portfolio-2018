@@ -6,7 +6,7 @@ import { appModel } from './model/appModel';
 import { ThumbnailPlane } from './works/thumbnailPlane';
 import { imageloader } from './util/imageloader';
 import { TweenMax } from 'gsap';
-
+const isMobile = require('./util/isMobile');
 // const dragDis = 300;
 
 export class WorksThumbnail extends EventEmitter {
@@ -74,15 +74,22 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_mouseDownHandler(event) {
+		this._distanceRate = 0;
 		if (!this._isMouseEnable) return;
-		window.addEventListener('mousemove', this._mouseMoveHandler);
-		window.addEventListener('mouseup', this._mouseUpHandler);
+		if (!isMobile) {
+			window.addEventListener('mousemove', this._mouseMoveHandler);
+			window.addEventListener('mouseup', this._mouseUpHandler);
+		}
 
-		this._startPt = event.clientX;
+		this._startPt = isMobile ? event.touches[0].clientX : event.clientX;
+		// event.preventDefault();
 	}
 
 	_mouseMoveHandler(event) {
-		let dis = event.clientX - this._startPt;
+		if (!this._isMouseEnable) return;
+		let pt = isMobile ? event.touches[0].clientX : event.clientX;
+		if (this._startPt == null) this._startPt = pt;
+		let dis = pt - this._startPt;
 		let distanceRate = dis / this.dragDis;
 
 		this._thumbnails.forEach(thumbniail => {
@@ -100,16 +107,17 @@ export class WorksThumbnail extends EventEmitter {
 
 			this._thumbnails[appModel.curWorkNum].updateRandom();
 			this._startPt = event.clientX;
+
 			// this._removeMouseUpEvent();
 		}
 
 		this._distanceRate = distanceRate;
+		// event.preventDefault();
 	}
 
 	_mouseUpHandler(event) {
-		let dis = event.clientX - this._startPt;
-		let distanceRate = dis / this.dragDis;
-		this._distanceRate = distanceRate;
+		console.log(this._isMouseEnable);
+		if (!this._isMouseEnable) return;
 
 		this._removeMouseUpEvent();
 
@@ -122,16 +130,25 @@ export class WorksThumbnail extends EventEmitter {
 				thumbniail.mouseUp();
 			});
 		}
+
+		this._startPt = null;
+
+		// event.preventDefault();
 	}
 
 	_removeMouseUpEvent() {
-		window.removeEventListener('mousemove', this._mouseMoveHandler);
-		window.removeEventListener('mouseup', this._mouseUpHandler);
+		if (!isMobile) {
+			window.removeEventListener('mousemove', this._mouseMoveHandler);
+			window.removeEventListener('mouseup', this._mouseUpHandler);
+		}
 
 		this._isMouseEnable = false;
-		TweenMax.delayedCall(0.4, () => {
-			this._isMouseEnable = true;
-		});
+		TweenMax.killTweensOf([this._mouseEnableHandler]);
+		// TweenMax.delayedCall(0.5, this._mouseEnableHandler, null, this);
+		// TweenMax.delayedCall(1, () => {});
+	}
+	_mouseEnableHandler() {
+		this._isMouseEnable = true;
 	}
 
 	_makeLoaders() {
@@ -139,13 +156,29 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_setMouseEvent() {
-		window.addEventListener('mousedown', this._mouseDownHandler);
+		if (isMobile) {
+			document.body.addEventListener('touchstart', this._mouseDownHandler, {
+				passive: true
+			});
+			document.body.addEventListener('touchmove', this._mouseMoveHandler, {
+				passive: true
+			});
+			document.body.addEventListener('touchend', this._mouseUpHandler, {
+				passive: true
+			});
+		} else {
+			window.addEventListener('mousedown', this._mouseDownHandler);
+		}
 	}
 
 	_removeMouseEvent() {
-		window.removeEventListener('mousedown', this._mouseDownHandler);
-		window.removeEventListener('mousemove', this._mouseMoveHandler);
-		window.removeEventListener('mouseup', this._mouseUpHandler);
+		document.body.removeEventListener('mousedown', this._mouseDownHandler);
+		document.body.removeEventListener('mousemove', this._mouseMoveHandler);
+		document.body.removeEventListener('mouseup', this._mouseUpHandler);
+
+		window.removeEventListener('touchstart', this._mouseDownHandler);
+		window.removeEventListener('touchmove', this._mouseMoveHandler);
+		window.removeEventListener('touchend', this._mouseUpHandler);
 	}
 
 	render(camera, mouse) {
@@ -190,20 +223,22 @@ export class WorksThumbnail extends EventEmitter {
 		let workNum =
 			(appModel.curWorkNum + (imageloader.assets.length - 1)) % imageloader.assets.length;
 		appModel.curWorkNum = workNum;
-		this._thumbnails[
-			(appModel.curWorkNum + (imageloader.assets.length - 1)) % imageloader.assets.length
-		].forceLeft();
 
-		this._thumbnails.forEach(thumbniail => {
-			thumbniail.mouseUp(value);
+		let forceLeftNum =
+			(appModel.curWorkNum + (imageloader.assets.length - 1)) % imageloader.assets.length;
+		this._thumbnails[forceLeftNum].forceLeft();
+
+		this._thumbnails.forEach((thumbniail, index) => {
+			if (index != forceLeftNum) thumbniail.mouseUp(value);
 		});
 	}
 	showPrevWork(value) {
 		appModel.curWorkNum = (appModel.curWorkNum + 1) % imageloader.assets.length;
-		this._thumbnails[(appModel.curWorkNum + 1) % imageloader.assets.length].forceRight();
+		let forceRightNum = (appModel.curWorkNum + 1) % imageloader.assets.length;
+		this._thumbnails[forceRightNum].forceRight();
 
-		this._thumbnails.forEach(thumbniail => {
-			thumbniail.mouseUp(value);
+		this._thumbnails.forEach((thumbniail, index) => {
+			if (index !== forceRightNum) thumbniail.mouseUp(value);
 		});
 	}
 	resize() {
