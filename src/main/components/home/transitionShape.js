@@ -264,10 +264,11 @@ export class TransitionShape extends EventEmitter {
 		}
 	}
 	backToHome() {
-		TweenMax.to(this, 1, { _transRate: 0, delay: 0.0 });
-		TweenMax.to(this, 1, {
+		let delay = this.name === 'about' ? 0.0 : 0.4;
+		TweenMax.to(this, 1.2, { _transRate: 0, delay: delay });
+		TweenMax.to(this, 1.2, {
 			_rollOutRate: 0,
-			delay: 0.5,
+			delay: 0.5 + delay,
 			onComplete: () => {
 				appModel.animationDone();
 			}

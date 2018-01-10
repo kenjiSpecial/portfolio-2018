@@ -25,7 +25,7 @@ import { works } from './components/works';
 
 function init() {
 	app = new App({
-		isDebug: isDebug
+		isDebug: false
 	});
 	imageloader.setGL(app.gl);
 

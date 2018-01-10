@@ -65,8 +65,6 @@ class Works extends EventEmitter {
 			y: window.innerHeight / 2 - 100 * scale
 		});
 
-		console.log(this._workList.clientWidth);
-
 		if (this._workList.clientWidth > 512 * scale) {
 			TweenMax.set(this._worksFooter, {
 				x: parseInt((window.innerWidth - this._workList.clientWidth) / 2),
@@ -122,26 +120,23 @@ class Works extends EventEmitter {
 		this.trigger('closeWorkHandler');
 	}
 	close() {
-		console.log('fadeOut');
 		this.fadeOut();
 	}
 	_clickPrevWorkHandler() {
 		if (this._isAnimation) return;
-		console.log(this._isAnimation);
 		this._isAnimation = true;
 		appModel.showPrevWork();
 
-		TweenMax.delayedCall(0.6, () => {
+		TweenMax.delayedCall(0.3, () => {
 			this._isAnimation = false;
 		});
 	}
 	_clickNextWorkHandler() {
 		if (this._isAnimation) return;
-		console.log(this._isAnimation);
 		this._isAnimation = true;
 		appModel.showNextWork();
 
-		TweenMax.delayedCall(0.6, () => {
+		TweenMax.delayedCall(0.3, () => {
 			this._isAnimation = false;
 		});
 	}

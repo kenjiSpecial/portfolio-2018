@@ -7,6 +7,7 @@ class AppModel extends EventEmitter {
 		this.isLoaded = false;
 		this.isInit = false;
 		this._curWorkNum = this.prevWorkNum = 0;
+		this._targetWorkSlideRate = this.prevTargetWorkSlideRate = 0;
 
 		this._page = this.prevPage = 'home';
 		this._isRollover = this.isPrevRollover = false;
@@ -51,6 +52,15 @@ class AppModel extends EventEmitter {
 
 	get curWorkNum() {
 		return this._curWorkNum;
+	}
+
+	set targetWorkSlideRate(value) {
+		this.prevTargetWorkSlideRate = this._targetWorkSlideRate;
+		this._targetWorkSlideRate = value;
+	}
+
+	get targetWorkSlideRate() {
+		return this._targetWorkSlideRate;
 	}
 
 	showWork(num) {

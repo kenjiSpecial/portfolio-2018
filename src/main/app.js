@@ -129,17 +129,21 @@ export default class App {
 		this._camera.lookAt([0, 0, 0]);
 		this._camera.update();
 
-		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 10;
-		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 10;
+		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 8;
+		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 8;
 
 		// render home
 		if (appModel.page == 'home' || (appModel.prevPage == 'home' && appModel.isPageTransition))
 			this._home.render(this._camera, this._mouse);
 
 		// render works thumbnail
-		if (appModel.page == 'works' || (appModel.prevPage == 'works' && appModel.isPageTransition))
+		if (
+			appModel.page == 'works' ||
+			(appModel.prevPage == 'works' && appModel.isPageTransition)
+		) {
 			this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
-		this._worksThumbnail.render(this._camera, this._mouse);
+			this._worksThumbnail.render(this._camera, this._mouse);
+		}
 
 		if (this._home.isRollover && !this._home.isPrevRollover) {
 			this.canvas.style.cursor = 'pointer';
@@ -194,8 +198,12 @@ export default class App {
 		this._width = width;
 		this._height = height;
 
-		this.canvas.width = this._width;
-		this.canvas.height = this._height;
+		let pixelRatio = window.devicePixelRatio > 1 ? 2 : 1;
+		this.canvas.width = this._width * pixelRatio;
+		this.canvas.height = this._height * pixelRatio;
+		this.canvas.style.width = `${this._width}px`;
+		this.canvas.style.height = `${this._height}px`;
+
 		this.gl.viewport(0, 0, this._width, this._height);
 
 		let tanFOV = Math.tan(Math.PI / 180 * 60 / 2);

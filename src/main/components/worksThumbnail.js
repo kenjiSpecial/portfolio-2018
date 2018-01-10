@@ -5,7 +5,8 @@ import { Loader } from './works/loader';
 import { appModel } from './model/appModel';
 import { ThumbnailPlane } from './works/thumbnailPlane';
 import { imageloader } from './util/imageloader';
-import { TweenMax } from 'gsap';
+import { TweenMax, TweenLite } from 'gsap';
+import { distance } from 'gl-matrix/src/gl-matrix/vec2';
 const isMobile = require('./util/isMobile');
 // const dragDis = 300;
 
@@ -16,8 +17,12 @@ export class WorksThumbnail extends EventEmitter {
 		this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
 		this._mouseUpHandler = this._mouseUpHandler.bind(this);
 
+		this.dragDis = Math.max(window.innerWidth / 3, 100);
+		this.prevFocusNum = this.focusNum = 0;
+
 		this._gl = gl;
 		this._time = 0;
+		this._totalSlideTargetRate = this._totalSlideRate = 0;
 		this._modelMatrix = mat4.create();
 		this._thumbnails = [];
 		this._isMouseEnable = false;
@@ -25,31 +30,30 @@ export class WorksThumbnail extends EventEmitter {
 		this._makeLoaders();
 		appModel.addListener('image:loaded', this._loadedHandler.bind(this));
 		appModel.addListener('showWork', nextNum => {
-			let duration = 0.6;
-			if (appModel.curWorkNum == 0) {
-				if (nextNum == 1) this.showPrevWork(duration);
-				else this.showNextWork(duration);
-			} else if (appModel.curWorkNum == 1) {
-				if (nextNum == 2) this.showPrevWork(duration);
-				else this.showNextWork(duration);
+			let num = this._getCurFocusThumbId(true);
+			let focusRawNum = Math.round(this._totalSlideTargetRate);
+			if (num == 2) {
+				this._totalSlideTargetRate = focusRawNum + (nextNum - num);
+				if (nextNum == 0) this._totalSlideTargetRate += 3;
+			} else if (num == 0) {
+				this._totalSlideTargetRate = focusRawNum + (nextNum - num);
+				if (nextNum == 2) this._totalSlideTargetRate -= 3;
 			} else {
-				if (nextNum == 0) this.showPrevWork(duration);
-				else this.showNextWork(duration);
+				this._totalSlideTargetRate = focusRawNum + (nextNum - num);
 			}
-
-			this._isMouseEnable = false;
-			TweenMax.delayedCall(duration, () => {
-				this._isMouseEnable = true;
-			});
+			TweenLite.to(this, 0.3, { _totalSlideTargetRate: this._totalSlideTargetRate });
 		});
+
 		appModel.addListener('showNextWork', () => {
-			this.showPrevWork(0.6);
+			let focusRawNum = Math.round(this._totalSlideTargetRate);
+			this._totalSlideTargetRate = focusRawNum + 1;
+			TweenLite.to(this, 0.3, { _totalSlideTargetRate: this._totalSlideTargetRate });
 		});
 		appModel.addListener('showPrevWork', () => {
-			this.showNextWork(0.6);
+			let focusRawNum = Math.round(this._totalSlideTargetRate);
+			this._totalSlideTargetRate = focusRawNum - 1;
+			TweenLite.to(this, 0.3, { _totalSlideTargetRate: this._totalSlideTargetRate });
 		});
-
-		this.dragDis = window.innerWidth / 2;
 	}
 	_loadedHandler() {
 		let side = 180;
@@ -74,8 +78,7 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_mouseDownHandler(event) {
-		this._distanceRate = 0;
-		if (!this._isMouseEnable) return;
+		TweenMax.killTweensOf([this._totalSlideTargetRate, this._totalSlideRate]);
 		if (!isMobile) {
 			window.addEventListener('mousemove', this._mouseMoveHandler);
 			window.addEventListener('mouseup', this._mouseUpHandler);
@@ -86,52 +89,39 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_mouseMoveHandler(event) {
-		if (!this._isMouseEnable) return;
+		if (!this._isAnimateIn) return;
 		let pt = isMobile ? event.touches[0].clientX : event.clientX;
 		if (this._startPt == null) this._startPt = pt;
 		let dis = pt - this._startPt;
+		this._startPt = pt;
+
 		let distanceRate = dis / this.dragDis;
+		if (distanceRate < -0.2) distanceRate = -0.2;
+		else if (distanceRate > 0.2) distanceRate = 0.2;
+		this._totalSlideTargetRate += distanceRate;
 
-		this._thumbnails.forEach(thumbniail => {
-			thumbniail.mouseMove(distanceRate);
-		});
-
-		if (distanceRate > 1 || distanceRate < -1) {
-			if (distanceRate > 1) {
-				appModel.curWorkNum = (appModel.curWorkNum + 2) % 3;
-				distanceRate = 1;
-			} else {
-				appModel.curWorkNum = (appModel.curWorkNum + 1) % 3;
-				distanceRate = -1;
-			}
-
-			this._thumbnails[appModel.curWorkNum].updateRandom();
-			this._startPt = event.clientX;
-
-			// this._removeMouseUpEvent();
-		}
-
-		this._distanceRate = distanceRate;
-		// event.preventDefault();
+		// let focusRate = this._totalSlideRate - focusRawNum * this._thumbnails.length;
 	}
 
 	_mouseUpHandler(event) {
-		console.log(this._isMouseEnable);
-		if (!this._isMouseEnable) return;
+		// if (!this._isMouseEnable) return;
 
 		this._removeMouseUpEvent();
 
-		if (this._distanceRate > 0.2) {
-			this.showNextWork();
-		} else if (this._distanceRate < -0.2) {
-			this.showPrevWork();
-		} else {
-			this._thumbnails.forEach(thumbniail => {
-				thumbniail.mouseUp();
-			});
-		}
+		// let focusRawNum = Math.floor(this._totalSlideRate);
+		TweenMax.to(this, 0.3, { _totalSlideTargetRate: Math.round(this._totalSlideTargetRate) });
 
-		this._startPt = null;
+		// if (this._distanceRate > 0.2) {
+		// 	this.showNextWork();
+		// } else if (this._distanceRate < -0.2) {
+		// 	this.showPrevWork();
+		// } else {
+		// 	this._thumbnails.forEach(thumbniail => {
+		// 		thumbniail.mouseUp();
+		// 	});
+		// }
+
+		// this._startPt = null;
 
 		// event.preventDefault();
 	}
@@ -142,10 +132,9 @@ export class WorksThumbnail extends EventEmitter {
 			window.removeEventListener('mouseup', this._mouseUpHandler);
 		}
 
-		this._isMouseEnable = false;
-		TweenMax.killTweensOf([this._mouseEnableHandler]);
+		// this._isMouseEnable = false;
+		// TweenMax.killTweensOf([this._mouseEnableHandler]);
 		// TweenMax.delayedCall(0.5, this._mouseEnableHandler, null, this);
-		// TweenMax.delayedCall(1, () => {});
 	}
 	_mouseEnableHandler() {
 		this._isMouseEnable = true;
@@ -183,77 +172,62 @@ export class WorksThumbnail extends EventEmitter {
 
 	render(camera, mouse) {
 		this._time += 1 / 60;
+		if (this._isAnimateIn) {
+			this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 12;
+
+			let focusNum = this._getCurFocusThumbId();
+			this.prevFocusNum = this.focusNum;
+			this.focusNum = focusNum;
+
+			if (this.prevFocusNum != this.focusNum) appModel.curWorkNum = parseInt(this.focusNum);
+		}
 
 		this._thumbnails.forEach(thumbnail => {
-			thumbnail.render(camera, mouse);
+			thumbnail.render(camera, mouse, this._totalSlideRate, this._thumbnails.length);
 		});
 
 		if (this._loader.animateOutRate !== 0.0) {
 			this._loader.render(camera, this._modelMatrix, mouse, this._time);
 		}
 	}
+	_getCurFocusThumbId(isRound = false) {
+		let mathFun = isRound ? Math.floor : Math.round;
+		let focusRawNum = mathFun(this._totalSlideTargetRate);
+		let focusNum = focusRawNum % this._thumbnails.length;
+		if (focusNum < 0) focusNum += this._thumbnails.length;
+
+		return focusNum;
+	}
 	_animateInWorkThumbnail() {
+		this._thumbnails.forEach(thumbnail => thumbnail.reset());
 		this._thumbnails[appModel.curWorkNum].animateIn();
-		TweenMax.delayedCall(1.2, () => {
-			this._isMouseEnable = true;
+
+		TweenMax.delayedCall(0.8, () => {
+			this._isAnimateIn = true;
 		});
 	}
 	animateIn() {
+		this._isAnimateIn = false;
 		if (!appModel.isLoaded) this._loader.animateIn();
 		else this._animateInWorkThumbnail();
 
 		this._setMouseEvent();
 	}
 	animateOut() {
-		this._thumbnails[appModel.curWorkNum].animateOut();
-		TweenMax.delayedCall(1.2, () => {
+		if (this._thumbnails[appModel.curWorkNum])
+			this._thumbnails[appModel.curWorkNum].animateOut();
+		TweenMax.delayedCall(0.8, () => {
 			this._isMouseEnable = false;
 		});
 
 		this._removeMouseEvent();
 	}
-	addGui(gui) {
-		this._testAnimateIn = this._testAnimateIn.bind(this);
-		this._testAnimateOut = this._testAnimateOut.bind(this);
-		let worksThumbnailGUI = gui.addFolder('worksThumbnail');
-		worksThumbnailGUI.add(this, '_testAnimateIn');
-		worksThumbnailGUI.add(this, '_testAnimateOut');
-	}
-	showNextWork(value) {
-		let workNum =
-			(appModel.curWorkNum + (imageloader.assets.length - 1)) % imageloader.assets.length;
-		appModel.curWorkNum = workNum;
-
-		let forceLeftNum =
-			(appModel.curWorkNum + (imageloader.assets.length - 1)) % imageloader.assets.length;
-		this._thumbnails[forceLeftNum].forceLeft();
-
-		this._thumbnails.forEach((thumbniail, index) => {
-			if (index != forceLeftNum) thumbniail.mouseUp(value);
-		});
-	}
-	showPrevWork(value) {
-		appModel.curWorkNum = (appModel.curWorkNum + 1) % imageloader.assets.length;
-		let forceRightNum = (appModel.curWorkNum + 1) % imageloader.assets.length;
-		this._thumbnails[forceRightNum].forceRight();
-
-		this._thumbnails.forEach((thumbniail, index) => {
-			if (index !== forceRightNum) thumbniail.mouseUp(value);
-		});
-	}
+	addGui(gui) {}
 	resize() {
-		this.dragDis = window.innerWidth / 2;
+		this.dragDis = Math.max(window.innerWidth / 3, 100);
 
 		this._thumbnails.forEach(thumbniail => {
 			thumbniail.resize();
 		});
-	}
-	_testAnimateIn() {
-		if (this._plane) this._plane.animateIn();
-		if (this._outPlane) this._outPlane.animateOut();
-	}
-	_testAnimateOut() {
-		if (this._plane) this._plane.animateOut();
-		if (this._outPlane) this._outPlane.animateIn();
 	}
 }

@@ -23,6 +23,7 @@ import { Euler } from 'tubugl-math/src/euler';
 import { Quint, Power2, TweenLite, TweenMax } from 'gsap';
 import { randomFloat, clamp } from 'tubugl-utils/src/mathUtils';
 import { appModel } from '../model/appModel';
+import { random } from 'gl-matrix/src/gl-matrix/vec2';
 
 export class ThumbnailPlane extends EventEmitter {
 	constructor(gl, params = {}, width = 100, height = 100, widthSegment = 1, heightSegment = 1) {
@@ -42,11 +43,10 @@ export class ThumbnailPlane extends EventEmitter {
 		this._height = height;
 		this._widthSegment = widthSegment;
 		this._heightSegment = heightSegment;
+		this._introRate = 0;
 
-		this._resetTransRate();
-
-		this._uRand0 = randomFloat(-300, 300);
-		this._uRand1 = randomFloat(-300, 300);
+		// this._resetTransRate();
+		this.updateRandom();
 
 		this._modelMatrix = mat4.create();
 		this._isNeedUpdate = true;
@@ -125,8 +125,12 @@ export class ThumbnailPlane extends EventEmitter {
 		}
 	}
 
-	render(camera, mouse) {
-		// if (this._transInRate == 0.0 || this._transOutRate == 1.0) return;
+	render(camera, mouse, totalSlideRate, thumbnailLength) {
+		let curValue = totalSlideRate - this.id;
+		let rate = curValue - Math.floor(curValue / thumbnailLength) * thumbnailLength;
+		if (rate < thumbnailLength && rate > thumbnailLength - 1) rate = rate - thumbnailLength;
+		this._transRate = rate;
+
 		this.update(camera, mouse).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
@@ -154,27 +158,24 @@ export class ThumbnailPlane extends EventEmitter {
 			camera.projectionMatrix
 		);
 		this._program.setUniformTexture(this._texture, 'uTexture');
-		// this._gl.uniform1f(this._program.getUniforms('uAlpha').location, this.alpha);
 		this._gl.uniform1f(this._program.getUniforms('uSide').location, this._width);
-		this._gl.uniform1f(this._program.getUniforms('uTransIn').location, this._transInRate);
-		this._gl.uniform1f(this._program.getUniforms('uTransOut').location, this._transOutRate);
+		this._gl.uniform1f(this._program.getUniforms('uTrans').location, this._transRate);
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
 		this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
+		this._gl.uniform1f(this._program.getUniforms('uIntro').location, this._introRate);
 
 		this._texture.activeTexture().bind();
 		return this;
 	}
 
 	_resetTransRate() {
-		if (this.id === (appModel.curWorkNum + 2) % 3) {
-			this._transInRate = 1.0;
-			this._transOutRate = 1.0;
-		} else {
-			this._transInRate = 0;
-			this._transOutRate = 0;
-		}
+		this._transRate = 9999;
+	}
+
+	reset() {
+		this._introRate = 0;
 	}
 
 	updateWire(camera) {
@@ -239,114 +240,48 @@ export class ThumbnailPlane extends EventEmitter {
 		// scale;
 	}
 
-	addGui(gui) {
-		let positionFolder = gui.addFolder('position');
-		positionFolder.add(this.position, 'x', -200, 200);
-		positionFolder.add(this.position, 'y', -200, 200);
-		positionFolder.add(this.position, 'z', -200, 200);
-
-		let scaleFolder = gui.addFolder('scale');
-		scaleFolder.add(this.scale, 'x', 0.05, 2).step(0.01);
-		scaleFolder.add(this.scale, 'y', 0.05, 2).step(0.01);
-		scaleFolder.add(this.scale, 'z', 0.05, 2).step(0.01);
-
-		let rotationFolder = gui.addFolder('rotation');
-		rotationFolder.add(this.rotation, 'x', -Math.PI, Math.PI).step(0.01);
-		rotationFolder.add(this.rotation, 'y', -Math.PI, Math.PI).step(0.01);
-		rotationFolder.add(this.rotation, 'z', -Math.PI, Math.PI).step(0.01);
-	}
+	addGui(gui) {}
 
 	updateRandom() {
-		this._uRand0 = randomFloat(150, 300);
-		this._uRand1 = randomFloat(150, 300);
-		if (Math.random() < 0.5) this._uRand0 *= -1;
-		if (Math.random() < 0.5) this._uRand1 *= -1;
+		if (this.id % 2 == 0) this._uRand0 = -randomFloat(100, 300);
+		else this._uRand0 = randomFloat(100, 300);
+
+		this._uRand1 = this._uRand0;
 	}
 
 	animateIn() {
-		this._transOutRate = 0;
 		TweenMax.fromTo(
 			this,
-			1.0,
-			{ _transInRate: 0 },
-			{ _transInRate: 1, ease: Power2.easeInOut, delay: 0.3 }
+			1.2,
+			{ _introRate: 1 },
+			{ _introRate: 0, ease: Power2.easeInOut, delay: 0.2 }
 		);
 	}
 
 	animateOut() {
-		this._transInRate = 1;
-		TweenMax.fromTo(
-			this,
-			0.8,
-			{ _transOutRate: 0 },
-			{ _transOutRate: 1, ease: Power2.easeOut }
-		);
+		TweenMax.to(this, 1.0, { _introRate: 1, ease: Power2.easeInOut });
 	}
 
-	mouseMove(value) {
-		if (this.id === appModel.curWorkNum) {
-			if (value > 0) {
-				this._transOutRate = 0.0;
-				this._transInRate = clamp(1 - value, 0.0, 1.0);
-			} else if (value < 0) {
-				this._transInRate = 1.0;
-				this._transOutRate = clamp(-value, 0.0, 1.0);
-			}
-
-			// console.log(this.id, this._transInRate, this._transOutRate, '0');
-		}
-
-		if (this.id === (appModel.curWorkNum + 1) % 3) {
-			if (value < 0) {
-				this._transOutRate = 0.0;
-				this._transInRate = clamp(-value, 0.0, 1.0);
-			} else {
-				this._transOutRate = clamp(value, 0.0, 1.0);
-				this._transInRate = 0.0;
-			}
-
-			// console.log(this.id, this._transInRate, this._transOutRate, '+1');
-		}
-
-		if (this.id === (appModel.curWorkNum + 2) % 3) {
-			if (value > 0) {
-				this._transInRate = 1.0;
-				this._transOutRate = clamp(1.0 - value, 0.0, 1.0);
-			} else {
-				this._transInRate = clamp(1.0 + value, 0.0, 1.0);
-				this._transOutRate = 1.0;
-			}
-
-			// console.log(this.id, this._transInRate, this._transOutRate, '+2');
-		}
+	mouseMove(value, totalLength) {
+		// console.log(value, totalLength);
 	}
 
 	mouseUp(value = 0.4) {
 		// value = 10;
-		TweenMax.killTweensOf([this._transInRate, this._transOutRate]);
-		if (this.id === appModel.curWorkNum) {
-			TweenMax.to(this, value, {
-				_transInRate: 1,
-				_transOutRate: 0,
-				onComplete: () => {
-					this.updateRandom();
-				}
-			});
-		} else if (this.id === (appModel.curWorkNum + 1) % 3) {
-			TweenMax.to(this, value, { _transInRate: 0, _transOutRate: 0 });
-		} else {
-			TweenMax.to(this, value, { _transInRate: 1, _transOutRate: 1 });
-		}
-	}
-
-	forceLeft() {
-		this._transInRate = 1;
-		this._transOutRate = 1;
-	}
-
-	forceRight() {
-		this._transInRate = 0;
-		this._transOutRate = 0;
+		// TweenMax.killTweensOf([this._transInRate, this._transOutRate]);
+		// if (this.id === appModel.curWorkNum) {
+		// 	TweenMax.to(this, value, {
+		// 		_transInRate: 1,
+		// 		_transOutRate: 0,
+		// 		onComplete: () => {
+		// 			this.updateRandom();
+		// 		}
+		// 	});
+		// } else if (this.id === (appModel.curWorkNum + 1) % 3) {
+		// 	TweenMax.to(this, value, { _transInRate: 0, _transOutRate: 0 });
+		// } else {
+		// 	TweenMax.to(this, value, { _transInRate: 1, _transOutRate: 1 });
+		// }
 	}
 
 	_updateModelMatrix() {
