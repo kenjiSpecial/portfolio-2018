@@ -10,7 +10,7 @@ import { Home } from './components/home';
 import { WorksThumbnail } from './components/worksThumbnail';
 import { PerspectiveCamera } from 'tubugl-camera';
 import { appModel } from './components/model/appModel';
-
+const isMobile = require('./components/util/isMobile');
 const WinHeight = 950;
 
 export default class App {
@@ -43,9 +43,9 @@ export default class App {
 			this._addGui();
 		}
 
-		document.body.addEventListener(
-			'touchmove',
-			event => {
+		if (isMobile) {
+			this.canvas.addEventListener('touchmove', event => {
+				event.preventDefault();
 				let xRate = (event.touches[0].clientX - this._width / 2) / (this._width / 2);
 				let yRate = (-event.touches[0].clientY + this._height / 2) / (this._height / 2);
 
@@ -63,35 +63,63 @@ export default class App {
 				let phi = this._targetMouse.y / 10;
 				this._targetAngle.theta = theta;
 				this._targetAngle.phi = phi;
-			},
-			{
-				passive: true
-			}
-		);
+			});
 
-		document.body.addEventListener('mousemove', event => {
-			let xRate = (event.clientX - this._width / 2) / (this._width / 2);
-			let yRate = (-event.clientY + this._height / 2) / (this._height / 2);
+			this.canvas.addEventListener('touchstart', event => {
+				let xRate = (event.touches[0].clientX - this._width / 2) / (this._width / 2);
+				let yRate = (-event.touches[0].clientY + this._height / 2) / (this._height / 2);
 
-			this._targetMouse = {
-				x: xRate,
-				y: yRate,
-				windowX: event.clientX,
-				windowY: event.clientY
-			};
+				this._targetMouse = {
+					x: xRate,
+					y: yRate,
+					windowX: event.touches[0].clientX,
+					windowY: event.touches[0].clientY
+				};
 
-			this._mouse.windowX = this._targetMouse.windowX;
-			this._mouse.windowY = this._targetMouse.windowY;
+				this._mouse.windowX = this._targetMouse.windowX;
+				this._mouse.windowY = this._targetMouse.windowY;
 
-			let theta = this._targetMouse.x / 10;
-			let phi = this._targetMouse.y / 10;
-			this._targetAngle.theta = theta;
-			this._targetAngle.phi = phi;
-		});
+				let theta = this._targetMouse.x / 10;
+				let phi = this._targetMouse.y / 10;
+				this._targetAngle.theta = theta;
+				this._targetAngle.phi = phi;
 
-		this.canvas.addEventListener('click', event => {
-			this._home.click();
-		});
+				this._startTime = +new Date();
+
+				if (appModel.page == 'home') this._home.render(this._camera, this._mouse);
+			});
+
+			this.canvas.addEventListener('touchend', event => {
+				if (appModel.page === 'home') {
+					let duration = +new Date() - this._startTime;
+					if (duration < 300) this._home.click();
+				}
+			});
+		} else {
+			document.body.addEventListener('mousemove', event => {
+				let xRate = (event.clientX - this._width / 2) / (this._width / 2);
+				let yRate = (-event.clientY + this._height / 2) / (this._height / 2);
+
+				this._targetMouse = {
+					x: xRate,
+					y: yRate,
+					windowX: event.clientX,
+					windowY: event.clientY
+				};
+
+				this._mouse.windowX = this._targetMouse.windowX;
+				this._mouse.windowY = this._targetMouse.windowY;
+
+				let theta = this._targetMouse.x / 10;
+				let phi = this._targetMouse.y / 10;
+				this._targetAngle.theta = theta;
+				this._targetAngle.phi = phi;
+			});
+
+			this.canvas.addEventListener('click', event => {
+				if (appModel.page === 'home') this._home.click();
+			});
+		}
 	}
 
 	animateIn() {

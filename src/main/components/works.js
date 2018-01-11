@@ -5,6 +5,12 @@ import { appModel } from './model/appModel';
 import { imageloader } from './util/imageloader';
 import { TweenMax } from 'gsap';
 
+const urls = [
+	'https://www.g-star.com/en_gb/elwood',
+	'https://thefwa.com/cases/adidas-ultraboost-all-terrain-p3',
+	'https://www.southwestheartoftravel.com/awards/'
+];
+
 class Works extends EventEmitter {
 	constructor() {
 		super();
@@ -17,6 +23,7 @@ class Works extends EventEmitter {
 		this._titles = document.getElementsByClassName('works-name');
 		this._worksBtns = document.getElementsByClassName('works-list-btn');
 		this._workList = document.getElementsByClassName('works-list')[0];
+		this._indivWorkUrl = document.getElementById('works-indiv-work-link');
 
 		this._setEvent();
 		this.resizeHandler();
@@ -35,6 +42,7 @@ class Works extends EventEmitter {
 		this.resizeHandler();
 	}
 	fadeIn(delay = 0) {
+		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
 		TweenMax.set(this._works, { display: 'block' });
 
 		this._titles[appModel.curWorkNum].style.display = 'block';
@@ -53,6 +61,8 @@ class Works extends EventEmitter {
 		TweenMax.set(this._titles[appModel.curWorkNum], { display: 'block' });
 		TweenMax.to(this._titles[appModel.curWorkNum], 0.3, { opacity: 1, delay: 0.2 });
 		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
+
+		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
 	}
 	animateOut() {}
 	resizeHandler() {

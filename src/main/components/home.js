@@ -151,7 +151,7 @@ export class Home extends EventEmitter {
 		let thetaVelocityArr = new Float32Array(delaunay.coords.length);
 		let thetaArr = new Float32Array(delaunay.coords.length * 1.5);
 
-		for (var ii = 0; ii < delaunay.coords.length / 2; ii++) {
+		for (let ii = 0; ii < delaunay.coords.length / 2; ii++) {
 			coords[3 * ii] = delaunay.coords[2 * ii];
 			coords[3 * ii + 1] = delaunay.coords[2 * ii + 1];
 			if (indicesColor[ii] == 'normal') coords[3 * ii + 2] = randomFloat(0, 20);
