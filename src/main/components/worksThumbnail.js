@@ -27,6 +27,10 @@ export class WorksThumbnail extends EventEmitter {
 		this._thumbnails = [];
 		this._isMouseEnable = false;
 
+		this.velocity = 0;
+		this.yScale = 1;
+		this._mouseVelocity = 0;
+
 		this._makeLoaders();
 		appModel.addListener('image:loaded', this._loadedHandler.bind(this));
 		appModel.addListener('showWork', nextNum => {
@@ -58,6 +62,7 @@ export class WorksThumbnail extends EventEmitter {
 	_loadedHandler() {
 		let side = 180;
 		let segments = 30;
+
 		for (let ii = 0; ii < imageloader.assets.length; ii++) {
 			let thumbnail = new ThumbnailPlane(
 				this._gl,
@@ -84,6 +89,7 @@ export class WorksThumbnail extends EventEmitter {
 			window.addEventListener('mouseup', this._mouseUpHandler);
 		}
 
+		this._curDistanceRate = this._prevDistanceRate = 0;
 		this._startPt = isMobile ? event.touches[0].clientX : event.clientX;
 		// event.preventDefault();
 	}
@@ -99,31 +105,15 @@ export class WorksThumbnail extends EventEmitter {
 		if (distanceRate < -0.2) distanceRate = -0.2;
 		else if (distanceRate > 0.2) distanceRate = 0.2;
 		this._totalSlideTargetRate += distanceRate;
+		this._prevDistanceRate = this._curDistanceRate;
+		this._curDistanceRate = distanceRate;
 
-		// let focusRate = this._totalSlideRate - focusRawNum * this._thumbnails.length;
+		this._mouseVelocity = Math.abs(this._curDistanceRate - this._prevDistanceRate);
 	}
 
 	_mouseUpHandler(event) {
-		// if (!this._isMouseEnable) return;
-
 		this._removeMouseUpEvent();
-
-		// let focusRawNum = Math.floor(this._totalSlideRate);
 		TweenMax.to(this, 0.3, { _totalSlideTargetRate: Math.round(this._totalSlideTargetRate) });
-
-		// if (this._distanceRate > 0.2) {
-		// 	this.showNextWork();
-		// } else if (this._distanceRate < -0.2) {
-		// 	this.showPrevWork();
-		// } else {
-		// 	this._thumbnails.forEach(thumbniail => {
-		// 		thumbniail.mouseUp();
-		// 	});
-		// }
-
-		// this._startPt = null;
-
-		// event.preventDefault();
 	}
 
 	_removeMouseUpEvent() {
@@ -180,10 +170,24 @@ export class WorksThumbnail extends EventEmitter {
 			this.focusNum = focusNum;
 
 			if (this.prevFocusNum != this.focusNum) appModel.curWorkNum = parseInt(this.focusNum);
+
+			this.velocity -= this._mouseVelocity * this.yScale * 30;
 		}
+		this.velocity -= 0.1 * (this.yScale - 1);
+		this.velocity *= 0.9;
+
+		this.yScale += 1 / 60 * this.velocity;
+		this.yScale += (1.0 - this.yScale) * 0.15;
+		this._mouseVelocity = 0;
 
 		this._thumbnails.forEach(thumbnail => {
-			thumbnail.render(camera, mouse, this._totalSlideRate, this._thumbnails.length);
+			thumbnail.render(
+				camera,
+				mouse,
+				this._totalSlideRate,
+				this._thumbnails.length,
+				this.yScale
+			);
 		});
 
 		if (this._loader.animateOutRate !== 0.0) {

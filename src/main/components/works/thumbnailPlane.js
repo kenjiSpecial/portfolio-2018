@@ -125,17 +125,17 @@ export class ThumbnailPlane extends EventEmitter {
 		}
 	}
 
-	render(camera, mouse, totalSlideRate, thumbnailLength) {
+	render(camera, mouse, totalSlideRate, thumbnailLength, yScale) {
 		let curValue = totalSlideRate - this.id;
 		let rate = curValue - Math.floor(curValue / thumbnailLength) * thumbnailLength;
 		if (rate < thumbnailLength && rate > thumbnailLength - 1) rate = rate - thumbnailLength;
 		this._transRate = rate;
 
-		this.update(camera, mouse).draw();
+		this.update(camera, mouse, yScale).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
 
-	update(camera, mouse) {
+	update(camera, mouse, yScale) {
 		this._updateModelMatrix();
 
 		this._program.bind();
@@ -165,6 +165,7 @@ export class ThumbnailPlane extends EventEmitter {
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
 		this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
 		this._gl.uniform1f(this._program.getUniforms('uIntro').location, this._introRate);
+		this._gl.uniform1f(this._program.getUniforms('uYScale').location, yScale);
 
 		this._texture.activeTexture().bind();
 		return this;
