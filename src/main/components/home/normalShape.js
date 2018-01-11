@@ -1,4 +1,5 @@
 import { Program, ArrayBuffer } from 'tubugl-core';
+
 import {
 	CULL_FACE,
 	BACK,

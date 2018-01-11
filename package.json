@@ -7,7 +7,7 @@
   "scripts": {
     "start": "parcel src/main/index.html --no-hmr",
     "prototype": "parcel src/prototype/index.html --no-hmr",
-    "dist00": "parcel build recipes/00/index.html -d docs/00 --public-url ./",
+    "build": "parcel build src/main/index.html -d docs --public-url ./",
     "screenshot00": "node ./node/screenshot.js --dir=app00",
     "docs": "python -m SimpleHTTPServer 8200"
   },
@@ -21,13 +21,17 @@
     "tubugl-3d-shape": "^1.3.0",
     "tubugl-camera": "^1.3.0",
     "tubugl-constants": "^1.0.3",
-    "tubugl-core": "^1.1.4",
+    "tubugl-core": "https://github.com/kenjiSpecial/tubugl-core.git",
     "tubugl-helper": "^1.0.2",
     "tubugl-math": "^1.1.7",
     "tubugl-utils": "^1.0.5",
     "wolfy87-eventemitter": "^5.2.4"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
     "minimist": "^1.2.0",
     "puppeteer": "^0.13.0"
   }
