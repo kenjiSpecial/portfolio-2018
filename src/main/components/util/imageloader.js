@@ -18,7 +18,7 @@ export class ImageLoader extends EventEmitter {
 		];
 
 		this._loadedCnt = 0;
-		this._minLoadingDuration = 2;
+		this._minLoadingDuration = 1;
 	}
 	setGL(gl) {
 		this._gl = gl;
