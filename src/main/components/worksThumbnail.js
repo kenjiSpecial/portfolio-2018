@@ -17,7 +17,7 @@ export class WorksThumbnail extends EventEmitter {
 		this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
 		this._mouseUpHandler = this._mouseUpHandler.bind(this);
 
-		this.dragDis = Math.max(window.innerWidth / 3, 100);
+		this.dragDis = Math.max(window.innerWidth / 4, 200);
 		this.prevFocusNum = this.focusNum = 0;
 
 		this._gl = gl;
@@ -102,8 +102,6 @@ export class WorksThumbnail extends EventEmitter {
 		this._startPt = pt;
 
 		let distanceRate = dis / this.dragDis;
-		if (distanceRate < -0.2) distanceRate = -0.2;
-		else if (distanceRate > 0.2) distanceRate = 0.2;
 		this._totalSlideTargetRate += distanceRate;
 		this._prevDistanceRate = this._curDistanceRate;
 		this._curDistanceRate = distanceRate;
@@ -163,7 +161,7 @@ export class WorksThumbnail extends EventEmitter {
 	render(camera, mouse) {
 		this._time += 1 / 60;
 		if (this._isAnimateIn) {
-			this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 12;
+			this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 10;
 
 			let focusNum = this._getCurFocusThumbId();
 			this.prevFocusNum = this.focusNum;
@@ -228,7 +226,7 @@ export class WorksThumbnail extends EventEmitter {
 	}
 	addGui(gui) {}
 	resize() {
-		this.dragDis = Math.max(window.innerWidth / 3, 100);
+		this.dragDis = Math.max(window.innerWidth / 4, 200);
 
 		this._thumbnails.forEach(thumbniail => {
 			thumbniail.resize();

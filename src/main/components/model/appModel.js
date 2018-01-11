@@ -3,7 +3,7 @@ const EventEmitter = require('wolfy87-eventemitter');
 class AppModel extends EventEmitter {
 	constructor() {
 		super();
-		this.isPageTransition = false;
+		this.isPageTransition = true;
 		this.isLoaded = false;
 		this.isInit = false;
 		this._curWorkNum = this.prevWorkNum = 0;

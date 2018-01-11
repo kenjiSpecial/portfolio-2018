@@ -18,9 +18,9 @@ varying float vScale;
 varying float vAlpha;
 
 void main(){
-    float transIn =  max(1.3 * uTrans - 0.3  * uv.y * uv.y, 0.0);
-    float posX = position.x  + uSide * ( transIn) + uv.x * 150. * ( transIn);
-    float posY = position.y * (1.0 - 0.9 * uv.x * transIn) * (1.0 - uIntro) * uYScale - uRandY0 *  transIn * uv.x ; 
+    float transIn =  max(1.0 * uTrans  , 0.0);
+    float posX = position.x  + uSide * ( transIn) + uv.x * 350. * ( transIn);
+    float posY = position.y * (1.0 - 0.9 * uv.x * transIn) * (1.0 - uIntro) * uYScale - uRandY0 * uYScale *  transIn * uv.x ; 
     float posZ = position.z - 1200. * (transIn) * uv.x;
 
     // float transIn = 1.0 - max(uTrans, 0.0);
@@ -28,9 +28,9 @@ void main(){
     // float posY = position.y * (1.0 - 0.9 * uv.x * (1.0 - transIn)) * (1.0 - uIntro) * uYScale - uRandY0 * (1.0 - transIn) * uv.x ; 
     // float posZ = position.z - 1200. * (1.0 - transIn) * uv.x;
     
-    float transOut = -min(1.3 * uTrans + 0.3 * (1.0 - uv.y * uv.y)- uIntro, 0.0);
-    posX = posX - transOut * uSide - (1.0 - uv.x) * 150. *transOut;
-    posY = posY * (1.0 - 0.9 * (1.0 - uv.x) * transOut) - uRandY1 * transOut * (1.0 - uv.x);
+    float transOut = -min(1.0 * uTrans - uIntro, 0.0);
+    posX = posX - transOut * uSide - (1.0 - uv.x) * 350. *transOut;
+    posY = posY * (1.0 - 0.9 * (1.0 - uv.x) * transOut) * uYScale - uRandY1 * uYScale * transOut * (1.0 - uv.x);
     posZ = posZ - 1200. * transOut * (1.0 - uv.x);
     gl_Position = projectionMatrix * viewMatrix * modelMatrix  * vec4(posX, posY, posZ, 1.0);
     vUv = uv;
