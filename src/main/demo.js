@@ -10,12 +10,15 @@ require('gsap');
 
 var urlParams = new URLSearchParams(window.location.search);
 const isDebug = !(urlParams.has('NoDebug') || urlParams.has('NoDebug/'));
+const isMobile = require('./components/util/isMobile');
 
 let aboutDom = document.getElementById('about');
 let aboutCloseDom = document.getElementById('about-close-btn');
 
 let app;
 import { works } from './components/works';
+
+if (isMobile) addClass(document.body, 'mobile');
 
 (() => {
 	init();
@@ -88,4 +91,9 @@ function clickCloseDomHandler(event) {
 
 function closeWorkHandler() {
 	if (appModel.page == 'works' && !appModel.isPageTransition) appModel.page = 'home';
+}
+
+function addClass(el, className) {
+	if (el.classList) el.classList.add(className);
+	else if (!hasClass(el, className)) el.className += ' ' + className;
 }

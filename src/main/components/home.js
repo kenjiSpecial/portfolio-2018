@@ -315,4 +315,12 @@ export class Home extends EventEmitter {
 			transitionShape.click();
 		});
 	}
+	touch(mouse) {
+		this._transitionShapes.forEach(transitionShape => {
+			transitionShape.checkRollover(mouse);
+		});
+		this._transitionShapes.forEach(transitionShape => {
+			transitionShape.click();
+		});
+	}
 }

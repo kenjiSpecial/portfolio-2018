@@ -44,55 +44,56 @@ export default class App {
 		}
 
 		if (isMobile) {
-			this.canvas.addEventListener('touchmove', event => {
-				event.preventDefault();
-				let xRate = (event.touches[0].clientX - this._width / 2) / (this._width / 2);
-				let yRate = (-event.touches[0].clientY + this._height / 2) / (this._height / 2);
+			window.addEventListener('deviceorientation', event => {
+				var y = event.beta; // In degree in the range [-180,180]
+				var x = event.gamma; // In degree in the range [-90,90]
+				if (y > 90) y = 90;
+				if (y < 0) y = 0;
 
-				this._targetMouse = {
-					x: xRate,
-					y: yRate,
-					windowX: event.touches[0].clientX,
-					windowY: event.touches[0].clientY
-				};
+				let scaleX, scaleY;
+				if (appModel.page == 'home') {
+					scaleX = 4.0;
+					scaleY = 2.0;
+				} else {
+					scaleX = 2.0;
+					scaleY = 1.0;
+				}
+				this._targetMouse.x = ((-x + 90) / 180 - 0.5) * scaleX;
+				this._targetMouse.y = (-y / 45 + 1) * scaleY;
 
-				this._mouse.windowX = this._targetMouse.windowX;
-				this._mouse.windowY = this._targetMouse.windowY;
+				if (this._targetMouse.x < -1) this._targetMouse.x = -1;
+				else if (this._targetMouse.x > 1) this._targetMouse.x = 1;
 
-				let theta = this._targetMouse.x / 10;
-				let phi = this._targetMouse.y / 10;
+				if (this._targetMouse.y < -1) this._targetMouse.y = -1;
+				else if (this._targetMouse.y > 1) this._targetMouse.y = 1;
+
+				let theta = this._targetMouse.x / 2;
+				let phi = this._targetMouse.y / 2;
 				this._targetAngle.theta = theta;
 				this._targetAngle.phi = phi;
 			});
 
-			this.canvas.addEventListener('touchstart', event => {
-				let xRate = (event.touches[0].clientX - this._width / 2) / (this._width / 2);
-				let yRate = (-event.touches[0].clientY + this._height / 2) / (this._height / 2);
+			this.canvas.addEventListener('touchmove', event => {
+				event.preventDefault();
 
-				this._targetMouse = {
-					x: xRate,
-					y: yRate,
-					windowX: event.touches[0].clientX,
-					windowY: event.touches[0].clientY
-				};
+				this._targetMouse.windowX = event.touches[0].clientX;
+				this._targetMouse.windowY = event.touches[0].clientY;
 
 				this._mouse.windowX = this._targetMouse.windowX;
 				this._mouse.windowY = this._targetMouse.windowY;
+			});
 
-				let theta = this._targetMouse.x / 10;
-				let phi = this._targetMouse.y / 10;
-				this._targetAngle.theta = theta;
-				this._targetAngle.phi = phi;
+			this.canvas.addEventListener('touchstart', event => {
+				this._mouse.windowX = event.touches[0].clientX;
+				this._mouse.windowY = event.touches[0].clientY;
 
 				this._startTime = +new Date();
-
-				if (appModel.page == 'home') this._home.render(this._camera, this._mouse);
 			});
 
 			this.canvas.addEventListener('touchend', event => {
 				if (appModel.page === 'home') {
 					let duration = +new Date() - this._startTime;
-					if (duration < 300) this._home.click();
+					if (duration < 300) this._home.touch(this._mouse);
 				}
 			});
 		} else {

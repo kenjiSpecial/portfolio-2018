@@ -184,6 +184,10 @@ canvas {
     &:hover{
         .works-navigation-svg{
             fill: #6666FF;
+            .mobile &{
+
+                fill: $gray;
+            }
         }
     }
     

@@ -17,6 +17,7 @@ import { appModel } from '../model/appModel';
 const EventEmitter = require('wolfy87-eventemitter');
 const vertSrc = require('./shaders/transitionShape.vert');
 const fragSrc = require('./shaders/transitionShape.frag');
+const isMobile = require('../util/isMobile');
 
 export class TransitionShape extends EventEmitter {
 	/**
@@ -32,7 +33,6 @@ export class TransitionShape extends EventEmitter {
 		super();
 		this._gl = gl;
 
-		this._isDesktop = true;
 		this._isRollover = false;
 		this._isAnimateIn = true;
 
@@ -116,7 +116,7 @@ export class TransitionShape extends EventEmitter {
 		this.update(camera, modelMatrix, introRate, mouse, time).draw();
 	}
 	update(camera, modelMatrix, introRate, mouse, time) {
-		if (this._isDesktop) this._checkRollover(mouse);
+		if (!isMobile) this.checkRollover(mouse);
 		this._program.bind();
 
 		this._updateAttributes();
@@ -182,7 +182,7 @@ export class TransitionShape extends EventEmitter {
 		return this._isRollover;
 	}
 
-	_checkRollover(mouse) {
+	checkRollover(mouse) {
 		if (appModel.isPageTransition) return;
 
 		let prevRollover = this._isRollover;
@@ -268,10 +268,10 @@ export class TransitionShape extends EventEmitter {
 		TweenMax.to(this, 1.2, { _transRate: 0, delay: delay });
 		TweenMax.to(this, 1.2, {
 			_rollOutRate: 0,
-			delay: 0.5 + delay,
-			onComplete: () => {
-				appModel.animationDone();
-			}
+			delay: 0.4 + delay
+		});
+		TweenMax.delayedCall(0.6 + delay, () => {
+			appModel.animationDone();
 		});
 		this._isAnimateIn = false;
 	}
