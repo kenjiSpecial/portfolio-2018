@@ -61,8 +61,8 @@ export class Home extends EventEmitter {
 		this.isRollover = this.isPrevRollover = false;
 	}
 	startIntro() {
-		TweenMax.to(this, 4, { _introRate: 1 });
-		TweenMax.to(this, 3, { _introMainTitleRate: 1 });
+		TweenLite.to(this, 4, { _introRate: 1 });
+		TweenLite.to(this, 3, { _introMainTitleRate: 1 });
 	}
 
 	backToHome() {

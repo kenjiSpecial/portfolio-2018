@@ -189,11 +189,11 @@ export class Loader extends EventEmitter {
 	}
 
 	animateIn() {
-		TweenMax.fromTo(this, 1.8, { _animateInRate: 0 }, { _animateInRate: 1, delay: 0.5 });
+		TweenLite.fromTo(this, 1.8, { _animateInRate: 0 }, { _animateInRate: 1, delay: 0.5 });
 	}
 
 	animateOut() {
-		TweenMax.to(this, 0.6, { animateOutRate: 0 });
+		TweenLite.to(this, 0.6, { animateOutRate: 0 });
 	}
 
 	resize(windowWidth, windowHeight) {}

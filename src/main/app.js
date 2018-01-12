@@ -2,9 +2,6 @@
  * make demo with rendering of plane(webgl)
  */
 
-const dat = require('dat.gui/build/dat.gui.min');
-const Stats = require('stats.js');
-
 import { DEPTH_TEST } from 'tubugl-constants';
 import { Home } from './components/home';
 import { WorksThumbnail } from './components/worksThumbnail';
@@ -50,22 +47,26 @@ export default class App {
 				if (y > 90) y = 90;
 				if (y < 0) y = 0;
 
-				let scaleX, scaleY;
+				let scaleX, scaleY, maxX, maxY;
 				if (appModel.page == 'home') {
 					scaleX = 4.0;
 					scaleY = 2.0;
+					maxX = 1;
+					maxY = 1;
 				} else {
 					scaleX = 2.0;
 					scaleY = 1.0;
+					maxX = 200 / this._width;
+					maxY = 200 / this._height;
 				}
 				this._targetMouse.x = ((-x + 90) / 180 - 0.5) * scaleX;
 				this._targetMouse.y = (-y / 45 + 1) * scaleY;
 
-				if (this._targetMouse.x < -1) this._targetMouse.x = -1;
-				else if (this._targetMouse.x > 1) this._targetMouse.x = 1;
+				if (this._targetMouse.x < -maxX) this._targetMouse.x = -maxX;
+				else if (this._targetMouse.x > maxX) this._targetMouse.x = maxX;
 
-				if (this._targetMouse.y < -1) this._targetMouse.y = -1;
-				else if (this._targetMouse.y > 1) this._targetMouse.y = 1;
+				if (this._targetMouse.y < -maxY) this._targetMouse.y = -maxY;
+				else if (this._targetMouse.y > maxY) this._targetMouse.y = maxY;
 
 				let theta = this._targetMouse.x / 2;
 				let phi = this._targetMouse.y / 2;
@@ -126,7 +127,7 @@ export default class App {
 	animateIn() {
 		this.isLoop = true;
 		this._home.startIntro();
-		TweenMax.ticker.addEventListener('tick', this.loop, this);
+		TweenLite.ticker.addEventListener('tick', this.loop, this);
 	}
 
 	worksAnimateIn() {
@@ -182,7 +183,7 @@ export default class App {
 	}
 
 	animateOut() {
-		TweenMax.ticker.removeEventListener('tick', this.loop, this);
+		TweenLite.ticker.removeEventListener('tick', this.loop, this);
 	}
 
 	mouseMoveHandler(mouse) {
@@ -215,10 +216,10 @@ export default class App {
 	_playAndStop() {
 		this.isLoop = !this.isLoop;
 		if (this.isLoop) {
-			TweenMax.ticker.addEventListener('tick', this.loop, this);
+			TweenLite.ticker.addEventListener('tick', this.loop, this);
 			this.playAndStopGui.name('pause');
 		} else {
-			TweenMax.ticker.removeEventListener('tick', this.loop, this);
+			TweenLite.ticker.removeEventListener('tick', this.loop, this);
 			this.playAndStopGui.name('play');
 		}
 	}

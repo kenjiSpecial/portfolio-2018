@@ -5,7 +5,7 @@ import { Loader } from './works/loader';
 import { appModel } from './model/appModel';
 import { ThumbnailPlane } from './works/thumbnailPlane';
 import { imageloader } from './util/imageloader';
-import { TweenMax, TweenLite } from 'gsap';
+import { TweenLite } from 'gsap/TweenLite';
 import { distance } from 'gl-matrix/src/gl-matrix/vec2';
 const isMobile = require('./util/isMobile');
 // const dragDis = 300;
@@ -83,7 +83,7 @@ export class WorksThumbnail extends EventEmitter {
 	}
 
 	_mouseDownHandler(event) {
-		TweenMax.killTweensOf([this._totalSlideTargetRate, this._totalSlideRate]);
+		TweenLite.killTweensOf([this._totalSlideTargetRate, this._totalSlideRate]);
 		if (!isMobile) {
 			window.addEventListener('mousemove', this._mouseMoveHandler);
 			window.addEventListener('mouseup', this._mouseUpHandler);
@@ -111,7 +111,7 @@ export class WorksThumbnail extends EventEmitter {
 
 	_mouseUpHandler(event) {
 		this._removeMouseUpEvent();
-		TweenMax.to(this, 0.3, { _totalSlideTargetRate: Math.round(this._totalSlideTargetRate) });
+		TweenLite.to(this, 0.3, { _totalSlideTargetRate: Math.round(this._totalSlideTargetRate) });
 	}
 
 	_removeMouseUpEvent() {
@@ -121,8 +121,8 @@ export class WorksThumbnail extends EventEmitter {
 		}
 
 		// this._isMouseEnable = false;
-		// TweenMax.killTweensOf([this._mouseEnableHandler]);
-		// TweenMax.delayedCall(0.5, this._mouseEnableHandler, null, this);
+		// TweenLite.killTweensOf([this._mouseEnableHandler]);
+		// TweenLite.delayedCall(0.5, this._mouseEnableHandler, null, this);
 	}
 	_mouseEnableHandler() {
 		this._isMouseEnable = true;
@@ -204,7 +204,7 @@ export class WorksThumbnail extends EventEmitter {
 		this._thumbnails.forEach(thumbnail => thumbnail.reset());
 		this._thumbnails[appModel.curWorkNum].animateIn();
 
-		TweenMax.delayedCall(0.8, () => {
+		TweenLite.delayedCall(0.8, () => {
 			this._isAnimateIn = true;
 		});
 	}
@@ -218,7 +218,7 @@ export class WorksThumbnail extends EventEmitter {
 	animateOut() {
 		if (this._thumbnails[appModel.curWorkNum])
 			this._thumbnails[appModel.curWorkNum].animateOut();
-		TweenMax.delayedCall(0.8, () => {
+		TweenLite.delayedCall(0.8, () => {
 			this._isMouseEnable = false;
 		});
 

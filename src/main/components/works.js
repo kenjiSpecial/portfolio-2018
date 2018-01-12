@@ -1,9 +1,9 @@
 const EventEmitter = require('wolfy87-eventemitter');
-require('gsap');
 
 import { appModel } from './model/appModel';
 import { imageloader } from './util/imageloader';
-import { TweenMax } from 'gsap';
+import { TweenLite } from 'gsap/TweenLite';
+import CSSPlugin from 'gsap/CSSPlugin';
 
 const urls = [
 	'https://www.g-star.com/en_gb/elwood',
@@ -43,23 +43,23 @@ class Works extends EventEmitter {
 	}
 	fadeIn(delay = 0) {
 		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
-		TweenMax.set(this._works, { display: 'block' });
+		TweenLite.set(this._works, { display: 'block' });
 
 		this._titles[appModel.curWorkNum].style.display = 'block';
 		this._titles[appModel.curWorkNum].style.opacity = 1;
 		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
 
-		TweenMax.to(this._works, 1.5, { opacity: 1, delay: delay, ease: Quint.easeInOut });
+		TweenLite.to(this._works, 1.5, { opacity: 1, delay: delay, ease: Quint.easeInOut });
 	}
 	fadeOut(delay = 0) {
-		TweenMax.to(this._works, 1, { opacity: 0, display: 'none', ease: Quint.easeOut });
+		TweenLite.to(this._works, 1, { opacity: 0, display: 'none', ease: Quint.easeOut });
 	}
 	_updateWorkHandler() {
-		TweenMax.to(this._titles[appModel.prevWorkNum], 0.3, { display: 'none', opacity: 0 });
+		TweenLite.to(this._titles[appModel.prevWorkNum], 0.3, { display: 'none', opacity: 0 });
 		removeClass(this._worksBtns[appModel.prevWorkNum], 'selected');
 
-		TweenMax.set(this._titles[appModel.curWorkNum], { display: 'block' });
-		TweenMax.to(this._titles[appModel.curWorkNum], 0.3, { opacity: 1, delay: 0.2 });
+		TweenLite.set(this._titles[appModel.curWorkNum], { display: 'block' });
+		TweenLite.to(this._titles[appModel.curWorkNum], 0.3, { opacity: 1, delay: 0.2 });
 		addClass(this._worksBtns[appModel.curWorkNum], 'selected');
 
 		this._indivWorkUrl.setAttribute('href', urls[appModel.curWorkNum]);
@@ -70,25 +70,25 @@ class Works extends EventEmitter {
 		let minSide = Math.min(window.innerWidth, window.innerHeight);
 		let scale = Math.min(minSide / 720, 1);
 
-		TweenMax.set(this._worksDescriptions, {
+		TweenLite.set(this._worksDescriptions, {
 			x: window.innerWidth / 2 - 350 * scale,
 			y: window.innerHeight / 2 - 100 * scale
 		});
 
 		if (this._workList.clientWidth > 512 * scale) {
-			TweenMax.set(this._worksFooter, {
+			TweenLite.set(this._worksFooter, {
 				x: parseInt((window.innerWidth - this._workList.clientWidth) / 2),
 				y: parseInt(window.innerHeight / 2 + 260 * scale)
 			});
 
-			TweenMax.set(this._closeBtn, { width: parseInt(this._workList.clientWidth) });
+			TweenLite.set(this._closeBtn, { width: parseInt(this._workList.clientWidth) });
 		} else {
-			TweenMax.set(this._worksFooter, {
+			TweenLite.set(this._worksFooter, {
 				x: parseInt(window.innerWidth / 2 - 256 * scale),
 				y: parseInt(window.innerHeight / 2 + 260 * scale)
 			});
 
-			TweenMax.set(this._closeBtn, { width: parseInt(512 * scale) });
+			TweenLite.set(this._closeBtn, { width: parseInt(512 * scale) });
 		}
 	}
 	resize() {
@@ -99,7 +99,7 @@ class Works extends EventEmitter {
 		this.resizeHandler();
 	}
 	resetTitle() {
-		TweenMax.set(this._titles, { display: 'none', opacity: 0 });
+		TweenLite.set(this._titles, { display: 'none', opacity: 0 });
 	}
 	_setEvent() {
 		this.imageloadedHandler = this.imageloadedHandler.bind(this);
@@ -137,7 +137,7 @@ class Works extends EventEmitter {
 		this._isAnimation = true;
 		appModel.showPrevWork();
 
-		TweenMax.delayedCall(0.3, () => {
+		TweenLite.delayedCall(0.3, () => {
 			this._isAnimation = false;
 		});
 	}
@@ -146,7 +146,7 @@ class Works extends EventEmitter {
 		this._isAnimation = true;
 		appModel.showNextWork();
 
-		TweenMax.delayedCall(0.3, () => {
+		TweenLite.delayedCall(0.3, () => {
 			this._isAnimation = false;
 		});
 	}

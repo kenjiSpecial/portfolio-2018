@@ -5,7 +5,7 @@ import { Texture } from 'tubugl-core/src/texture';
 import { appModel } from '../model/appModel';
 
 const EventEmitter = require('wolfy87-eventemitter');
-require('gsap');
+require('gsap/TweenLite');
 
 export class ImageLoader extends EventEmitter {
 	constructor() {
@@ -44,7 +44,7 @@ export class ImageLoader extends EventEmitter {
 			if (time > this._minLoadingDuration) {
 				this._loadedHandler();
 			} else {
-				TweenMax.delayedCall(
+				TweenLite.delayedCall(
 					this._minLoadingDuration - time,
 					this._loadedHandler,
 					null,

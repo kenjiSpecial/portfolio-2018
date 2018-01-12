@@ -20,7 +20,7 @@ import {
 import { generateWireframeIndices } from 'tubugl-utils';
 import { Vector3 } from 'tubugl-math/src/vector3';
 import { Euler } from 'tubugl-math/src/euler';
-import { Quint, Power2, TweenLite, TweenMax } from 'gsap';
+import { Quint, Power2, TweenLite } from 'gsap/TweenLite';
 import { randomFloat, clamp } from 'tubugl-utils/src/mathUtils';
 import { appModel } from '../model/appModel';
 import { random } from 'gl-matrix/src/gl-matrix/vec2';
@@ -251,7 +251,7 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	animateIn() {
-		TweenMax.fromTo(
+		TweenLite.fromTo(
 			this,
 			1.2,
 			{ _introRate: 1 },
@@ -260,7 +260,7 @@ export class ThumbnailPlane extends EventEmitter {
 	}
 
 	animateOut() {
-		TweenMax.to(this, 1.0, { _introRate: 1, ease: Power2.easeInOut });
+		TweenLite.to(this, 1.0, { _introRate: 1, ease: Power2.easeInOut });
 	}
 
 	mouseMove(value, totalLength) {
@@ -269,9 +269,9 @@ export class ThumbnailPlane extends EventEmitter {
 
 	mouseUp(value = 0.4) {
 		// value = 10;
-		// TweenMax.killTweensOf([this._transInRate, this._transOutRate]);
+		// TweenLite.killTweensOf([this._transInRate, this._transOutRate]);
 		// if (this.id === appModel.curWorkNum) {
-		// 	TweenMax.to(this, value, {
+		// 	TweenLite.to(this, value, {
 		// 		_transInRate: 1,
 		// 		_transOutRate: 0,
 		// 		onComplete: () => {
@@ -279,9 +279,9 @@ export class ThumbnailPlane extends EventEmitter {
 		// 		}
 		// 	});
 		// } else if (this.id === (appModel.curWorkNum + 1) % 3) {
-		// 	TweenMax.to(this, value, { _transInRate: 0, _transOutRate: 0 });
+		// 	TweenLite.to(this, value, { _transInRate: 0, _transOutRate: 0 });
 		// } else {
-		// 	TweenMax.to(this, value, { _transInRate: 1, _transOutRate: 1 });
+		// 	TweenLite.to(this, value, { _transInRate: 1, _transOutRate: 1 });
 		// }
 	}
 

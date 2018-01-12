@@ -146,7 +146,7 @@ export class TransitionShape extends EventEmitter {
 		return this;
 	}
 	testAbout() {
-		TweenMax.fromTo(this, 1.8, { _transRate: 0 }, { _transRate: 1 });
+		TweenLite.fromTo(this, 1.8, { _transRate: 0 }, { _transRate: 1 });
 	}
 	draw() {
 		this._gl.enable(CULL_FACE);
@@ -198,9 +198,9 @@ export class TransitionShape extends EventEmitter {
 		}
 
 		if (this._isRollover && !prevRollover) {
-			TweenMax.killTweensOf([this._rollOverRate, this._rollOutRate]);
+			TweenLite.killTweensOf([this._rollOverRate, this._rollOutRate]);
 			if (this._rollOutRate == 1.0) {
-				TweenMax.fromTo(
+				TweenLite.fromTo(
 					this,
 					0.6,
 					{ _rollOverRate: 0 },
@@ -210,10 +210,10 @@ export class TransitionShape extends EventEmitter {
 					}
 				);
 			} else {
-				TweenMax.to(this, 0.3, {
+				TweenLite.to(this, 0.3, {
 					_rollOutRate: 1.0
 				});
-				TweenMax.fromTo(
+				TweenLite.fromTo(
 					this,
 					0.6,
 					{
@@ -226,7 +226,7 @@ export class TransitionShape extends EventEmitter {
 				);
 			}
 		} else if (!this._isRollover && prevRollover) {
-			TweenMax.to(this, 0.6, {
+			TweenLite.to(this, 0.6, {
 				_rollOutRate: 0.0
 			});
 		}
@@ -253,7 +253,7 @@ export class TransitionShape extends EventEmitter {
 		if (this._isRollover) {
 			this._isRollover = false;
 			this._isAnimateIn = true;
-			TweenMax.to(this, 1.2, {
+			TweenLite.to(this, 1.2, {
 				_transRate: 1,
 				onComplete: () => {
 					appModel.animationDone();
@@ -265,12 +265,12 @@ export class TransitionShape extends EventEmitter {
 	}
 	backToHome() {
 		let delay = this.name === 'about' ? 0.0 : 0.4;
-		TweenMax.to(this, 1.2, { _transRate: 0, delay: delay });
-		TweenMax.to(this, 1.2, {
+		TweenLite.to(this, 1.2, { _transRate: 0, delay: delay });
+		TweenLite.to(this, 1.2, {
 			_rollOutRate: 0,
 			delay: 0.4 + delay
 		});
-		TweenMax.delayedCall(0.6 + delay, () => {
+		TweenLite.delayedCall(0.6 + delay, () => {
 			appModel.animationDone();
 		});
 		this._isAnimateIn = false;

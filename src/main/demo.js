@@ -5,8 +5,8 @@ import './main.scss';
 import App from './app';
 import { appModel } from './components/model/appModel';
 import { imageloader } from './components/util/imageloader';
-
-require('gsap');
+import { TweenLite } from 'gsap/TweenLite';
+import CSSPlugin from 'gsap/CSSPlugin';
 
 var urlParams = new URLSearchParams(window.location.search);
 const isDebug = !(urlParams.has('NoDebug') || urlParams.has('NoDebug/'));
@@ -17,7 +17,6 @@ let aboutCloseDom = document.getElementById('about-close-btn');
 
 let app;
 import { works } from './components/works';
-
 if (isMobile) addClass(document.body, 'mobile');
 
 (() => {
@@ -64,12 +63,12 @@ function updatePageHandler() {
 	}
 
 	if (appModel.page === 'about') {
-		TweenMax.set(aboutDom, { display: 'block' });
-		TweenMax.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
+		TweenLite.set(aboutDom, { display: 'block' });
+		TweenLite.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
 	} else if (appModel.page === 'home') {
 		if (!appModel.isInit) {
 			app.backToHome();
-			TweenMax.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
+			TweenLite.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
 		}
 	} else {
 		works.animateIn();
