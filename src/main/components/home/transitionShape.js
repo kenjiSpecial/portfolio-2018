@@ -12,6 +12,7 @@ import {
 import { ArrayBuffer } from 'tubugl-core/src/arrayBuffer';
 import { IndexArrayBuffer } from 'tubugl-core/src/indexArrayBuffer';
 import { Program } from 'tubugl-core/src/program';
+import { TweenLite } from 'gsap/TweenLite';
 import { appModel } from '../model/appModel';
 
 const EventEmitter = require('wolfy87-eventemitter');
