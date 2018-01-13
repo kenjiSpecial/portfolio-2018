@@ -251,10 +251,11 @@ export class TransitionShape extends EventEmitter {
 	click() {
 		if (appModel.isPageTransition) return;
 
+		let duration = isMobile ? 1.0 : 1.2;
 		if (this._isRollover) {
 			this._isRollover = false;
 			this._isAnimateIn = true;
-			TweenLite.to(this, 1.2, {
+			TweenLite.to(this, duration, {
 				_transRate: 1,
 				onComplete: () => {
 					appModel.animationDone();

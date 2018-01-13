@@ -250,39 +250,17 @@ export class ThumbnailPlane extends EventEmitter {
 		this._uRand1 = this._uRand0;
 	}
 
-	animateIn() {
+	animateIn(delay = 0) {
 		TweenLite.fromTo(
 			this,
 			1.2,
 			{ _introRate: 1 },
-			{ _introRate: 0, ease: Power2.easeInOut, delay: 0.2 }
+			{ _introRate: 0, ease: Power2.easeInOut, delay: delay }
 		);
 	}
 
 	animateOut() {
 		TweenLite.to(this, 1.0, { _introRate: 1, ease: Power2.easeInOut });
-	}
-
-	mouseMove(value, totalLength) {
-		// console.log(value, totalLength);
-	}
-
-	mouseUp(value = 0.4) {
-		// value = 10;
-		// TweenLite.killTweensOf([this._transInRate, this._transOutRate]);
-		// if (this.id === appModel.curWorkNum) {
-		// 	TweenLite.to(this, value, {
-		// 		_transInRate: 1,
-		// 		_transOutRate: 0,
-		// 		onComplete: () => {
-		// 			this.updateRandom();
-		// 		}
-		// 	});
-		// } else if (this.id === (appModel.curWorkNum + 1) % 3) {
-		// 	TweenLite.to(this, value, { _transInRate: 0, _transOutRate: 0 });
-		// } else {
-		// 	TweenLite.to(this, value, { _transInRate: 1, _transOutRate: 1 });
-		// }
 	}
 
 	_updateModelMatrix() {

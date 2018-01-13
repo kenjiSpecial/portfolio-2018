@@ -200,9 +200,9 @@ export class WorksThumbnail extends EventEmitter {
 
 		return focusNum;
 	}
-	_animateInWorkThumbnail() {
+	_animateInWorkThumbnail(delay = 0.2) {
 		this._thumbnails.forEach(thumbnail => thumbnail.reset());
-		this._thumbnails[appModel.curWorkNum].animateIn();
+		this._thumbnails[appModel.curWorkNum].animateIn(delay);
 
 		TweenLite.delayedCall(0.8, () => {
 			this._isAnimateIn = true;
@@ -211,7 +211,7 @@ export class WorksThumbnail extends EventEmitter {
 	animateIn() {
 		this._isAnimateIn = false;
 		if (!appModel.isLoaded) this._loader.animateIn();
-		else this._animateInWorkThumbnail();
+		else this._animateInWorkThumbnail(0.7);
 
 		this._setMouseEvent();
 	}

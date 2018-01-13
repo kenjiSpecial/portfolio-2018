@@ -49,13 +49,13 @@ export default class App {
 
 				let scaleX, scaleY, maxX, maxY;
 				if (appModel.page == 'home') {
-					scaleX = 4.0;
-					scaleY = 2.0;
-					maxX = 1;
-					maxY = 1;
-				} else {
 					scaleX = 2.0;
 					scaleY = 1.0;
+					maxX = 0.4;
+					maxY = 0.4;
+				} else {
+					scaleX = 1.0;
+					scaleY = 0.5;
 					maxX = 200 / this._width;
 					maxY = 200 / this._height;
 				}
@@ -159,8 +159,9 @@ export default class App {
 		this._camera.lookAt([0, 0, 0]);
 		this._camera.update();
 
-		this._mouse.x += (this._targetMouse.x - this._mouse.x) / 8;
-		this._mouse.y += (this._targetMouse.y - this._mouse.y) / 8;
+		let inc = isMobile ? 20 : 8;
+		this._mouse.x += (this._targetMouse.x - this._mouse.x) / inc;
+		this._mouse.y += (this._targetMouse.y - this._mouse.y) / inc;
 
 		// render home
 		if (appModel.page == 'home' || (appModel.prevPage == 'home' && appModel.isPageTransition))
