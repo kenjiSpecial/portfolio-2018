@@ -14,6 +14,7 @@ const isMobile = require('./components/util/isMobile');
 
 let aboutDom = document.getElementById('about');
 let aboutCloseDom = document.getElementById('about-close-btn');
+let main = document.getElementById('main');
 
 let app;
 import { works } from './components/works';
@@ -26,12 +27,13 @@ if (isMobile) addClass(document.body, 'mobile');
 })();
 
 function init() {
+	let id = document.getElementById('main');
 	app = new App({
+		parent: id,
 		isDebug: false
 	});
 	imageloader.setGL(app.gl);
 
-	let id = document.getElementById('main');
 	id.appendChild(app.canvas);
 }
 
@@ -60,11 +62,13 @@ function updatePageHandler() {
 	if (appModel.prevPage === 'works') {
 		works.close();
 		app.worksAnimateOut();
+		removeClass(main, 'mouseup');
 	}
 
 	if (appModel.page === 'about') {
 		TweenLite.set(aboutDom, { display: 'block' });
 		TweenLite.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
+		app.removeClickEvent();
 	} else if (appModel.page === 'home') {
 		if (!appModel.isInit) {
 			app.backToHome();
@@ -73,14 +77,17 @@ function updatePageHandler() {
 	} else {
 		works.animateIn();
 		app.worksAnimateIn();
+		app.removeClickEvent();
+
+		setTimeout(() => {
+			app.canvas.style.cursor = '';
+		}, 0);
+		addClass(main, 'cursor-move');
 	}
 	appModel.isInit = false;
 }
 
-function donePageHandler() {
-	if (appModel.page === 'works') {
-	}
-}
+function donePageHandler() {}
 
 function clickCloseDomHandler(event) {
 	if (appModel.page == 'about' && !appModel.isPageTransition) {
@@ -95,4 +102,15 @@ function closeWorkHandler() {
 function addClass(el, className) {
 	if (el.classList) el.classList.add(className);
 	else if (!hasClass(el, className)) el.className += ' ' + className;
+}
+
+function removeClass(el, className) {
+	if (el.classList) el.classList.remove(className);
+	else el.className = el.className.replace(new RegExp('\\b' + className + '\\b', 'g'), '');
+}
+
+function hasClass(el, className) {
+	return el.classList
+		? el.classList.contains(className)
+		: new RegExp('\\b' + className + '\\b').test(el.className);
 }

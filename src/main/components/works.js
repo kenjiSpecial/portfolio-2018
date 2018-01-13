@@ -52,9 +52,14 @@ class Works extends EventEmitter {
 		TweenLite.to(this._works, 1.5, { opacity: 1, delay: delay, ease: Quint.easeInOut });
 	}
 	fadeOut(delay = 0) {
+		TweenLite.killTweensOf([this._works]);
 		TweenLite.to(this._works, 1, { opacity: 0, display: 'none', ease: Quint.easeOut });
 	}
 	_updateWorkHandler() {
+		TweenLite.killTweensOf([
+			this._titles[appModel.prevWorkNum],
+			this._titles[appModel.curWorkNum]
+		]);
 		TweenLite.to(this._titles[appModel.prevWorkNum], 0.3, { display: 'none', opacity: 0 });
 		removeClass(this._worksBtns[appModel.prevWorkNum], 'selected');
 

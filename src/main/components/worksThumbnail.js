@@ -25,6 +25,8 @@ export class WorksThumbnail extends EventEmitter {
 		this._totalSlideTargetRate = this._totalSlideRate = 0;
 		this._modelMatrix = mat4.create();
 		this._thumbnails = [];
+		this._parent = params.parent ? params.parent : document.getElementById('main');
+
 		this._isMouseEnable = false;
 
 		this.velocity = 0;
@@ -85,6 +87,7 @@ export class WorksThumbnail extends EventEmitter {
 	_mouseDownHandler(event) {
 		TweenLite.killTweensOf([this._totalSlideTargetRate, this._totalSlideRate]);
 		if (!isMobile) {
+			// console.log(this._parent);
 			window.addEventListener('mousemove', this._mouseMoveHandler);
 			window.addEventListener('mouseup', this._mouseUpHandler);
 		}
@@ -116,6 +119,7 @@ export class WorksThumbnail extends EventEmitter {
 
 	_removeMouseUpEvent() {
 		if (!isMobile) {
+			// removeClass(this._parent, 'cursor-move-active');
 			window.removeEventListener('mousemove', this._mouseMoveHandler);
 			window.removeEventListener('mouseup', this._mouseUpHandler);
 		}
@@ -134,14 +138,15 @@ export class WorksThumbnail extends EventEmitter {
 
 	_setMouseEvent() {
 		if (isMobile) {
-			document.body.addEventListener('touchstart', this._mouseDownHandler, {
-				passive: true
+			let main = document.getElementById('main');
+			main.addEventListener('touchstart', this._mouseDownHandler, {
+				// passive: true
 			});
-			document.body.addEventListener('touchmove', this._mouseMoveHandler, {
-				passive: true
+			main.addEventListener('touchmove', this._mouseMoveHandler, {
+				// passive: true
 			});
-			document.body.addEventListener('touchend', this._mouseUpHandler, {
-				passive: true
+			main.addEventListener('touchend', this._mouseUpHandler, {
+				// passive: true
 			});
 		} else {
 			window.addEventListener('mousedown', this._mouseDownHandler);
@@ -232,4 +237,20 @@ export class WorksThumbnail extends EventEmitter {
 			thumbniail.resize();
 		});
 	}
+}
+
+function addClass(el, className) {
+	if (el.classList) el.classList.add(className);
+	else if (!hasClass(el, className)) el.className += ' ' + className;
+}
+
+function removeClass(el, className) {
+	if (el.classList) el.classList.remove(className);
+	else el.className = el.className.replace(new RegExp('\\b' + className + '\\b', 'g'), '');
+}
+
+function hasClass(el, className) {
+	return el.classList
+		? el.classList.contains(className)
+		: new RegExp('\\b' + className + '\\b').test(el.className);
 }

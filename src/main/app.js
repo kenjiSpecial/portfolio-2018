@@ -118,10 +118,11 @@ export default class App {
 				this._targetAngle.phi = phi;
 			});
 
-			this.canvas.addEventListener('click', event => {
-				if (appModel.page === 'home') this._home.click();
-			});
+			this._clickHandler = this._clickHandler.bind(this);
 		}
+	}
+	_clickHandler() {
+		if (appModel.page === 'home') this._home.click();
 	}
 
 	animateIn() {
@@ -176,10 +177,12 @@ export default class App {
 			this._worksThumbnail.render(this._camera, this._mouse);
 		}
 
-		if (this._home.isRollover && !this._home.isPrevRollover) {
-			this.canvas.style.cursor = 'pointer';
-		} else if (!this._home.isRollover && this._home.isPrevRollover) {
-			this.canvas.style.cursor = 'default';
+		if (appModel.page === 'home') {
+			if (this._home.isRollover && !this._home.isPrevRollover) {
+				this.canvas.style.cursor = 'pointer';
+			} else if (!this._home.isRollover && this._home.isPrevRollover) {
+				this.canvas.style.cursor = 'default';
+			}
 		}
 	}
 
@@ -282,5 +285,10 @@ export default class App {
 
 	backToHome() {
 		this._home.backToHome();
+		if (!isMobile) this.canvas.addEventListener('click', this._clickHandler);
+	}
+
+	removeClickEvent() {
+		if (!isMobile) this.canvas.removeEventListener('click', this._clickHandler);
 	}
 }

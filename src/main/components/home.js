@@ -226,7 +226,21 @@ export class Home extends EventEmitter {
 		else this._time += 1 / 500;
 
 		this._normalShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
-
+		/** 
+		this._aboutShape.render(
+			camera,
+			this._modelMatrix,
+			this._introMainTitleRate,
+			mouse,
+			this._time
+		);
+		this._worksShape.render(
+			camera,
+			this._modelMatrix,
+			this._introMainTitleRate,
+			mouse,
+			this._time
+		);*/
 		this._textShape.render(
 			camera,
 			this._modelMatrix,

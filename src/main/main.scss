@@ -33,11 +33,8 @@ a:hover {
 #about,
 #works {
     -webkit-user-select: none;
-    /* Chrome all / Safari all */
     -moz-user-select: none;
-    /* Firefox all */
     -ms-user-select: none;
-    /* IE 10+ */
     user-select: none;
 
     display: none;
@@ -46,22 +43,29 @@ a:hover {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
     
 }
 
-#works{
-    cursor: move; /* fallback if grab cursor is unsupported */
-    cursor: grab;
-    cursor: -moz-grab;
-    cursor: -webkit-grab;
-    
-    &:active{
-        cursor: grabbing;
-        cursor: -moz-grabbing;
-        cursor: -webkit-grabbing;
-    }
+#about {
+    height: 100%;
+    overflow: hidden;
 }
+
+
+// .cursor-move{
+    canvas{
+        cursor: move; /* fallback if grab cursor is unsupported */
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+        
+        // &:active{
+        //     cursor: grabbing;
+        //     cursor: -moz-grabbing;
+        //     cursor: -webkit-grabbing;
+        // }   
+    }
+// }
 
 
 
