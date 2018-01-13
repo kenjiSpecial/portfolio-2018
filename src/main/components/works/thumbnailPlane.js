@@ -170,6 +170,7 @@ export class ThumbnailPlane extends EventEmitter {
 			this._windowHeight,
 			this.scale.x
 		);
+		console.log(this._windowWidth, this._windowHeight);
 		this._gl.uniform1f(this._program.getUniforms('uIntro').location, this._introRate);
 		this._gl.uniform1f(this._program.getUniforms('uYScale').location, yScale);
 
@@ -245,6 +246,7 @@ export class ThumbnailPlane extends EventEmitter {
 		// mat4.fromScaling(this._modelMatrix, [scale, scale, 1]);
 		this.scale.x = scale;
 		this.scale.y = scale;
+
 		// console.log(this.scale);
 		// scale;
 	}

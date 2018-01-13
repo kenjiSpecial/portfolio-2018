@@ -45,7 +45,7 @@ void main(){
     scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.1;
     
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
-    gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w;
+    gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w / uWindow.y * uWindow.x;
     
     vAlpha = clamp( (1.0 - transIn) * 2.0 - vUv.x, 0.0, 1.0) * clamp(1.0 + vUv.x- 2.0 * transOut, 0.0, 1.0 ) * (1.0 -  uIntro);
     vScale = dis * 10. ;
