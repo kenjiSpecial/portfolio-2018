@@ -30,7 +30,22 @@ a:hover {
     display: block;
 }
 
-#about,
+#about{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    display: none;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
 #works {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -45,12 +60,6 @@ a:hover {
     width: 100%;
     
 }
-
-#about {
-    height: 100%;
-    overflow: hidden;
-}
-
 
 // .cursor-move{
     canvas{

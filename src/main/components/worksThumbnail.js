@@ -17,7 +17,7 @@ export class WorksThumbnail extends EventEmitter {
 		this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
 		this._mouseUpHandler = this._mouseUpHandler.bind(this);
 
-		this.dragDis = Math.max(window.innerWidth / 4, 200);
+		this.dragDis = Math.max(window.innerWidth / 4, isMobile ? 150 : 200);
 		this.prevFocusNum = this.focusNum = 0;
 
 		this._gl = gl;
@@ -231,26 +231,12 @@ export class WorksThumbnail extends EventEmitter {
 	}
 	addGui(gui) {}
 	resize() {
-		this.dragDis = Math.max(window.innerWidth / 4, 200);
+		this._width = window.innerWidth;
+		this._height = window.innerHeight;
+		this.dragDis = Math.max(window.innerWidth / 4, isMobile ? 150 : 200);
 
 		this._thumbnails.forEach(thumbniail => {
 			thumbniail.resize();
 		});
 	}
-}
-
-function addClass(el, className) {
-	if (el.classList) el.classList.add(className);
-	else if (!hasClass(el, className)) el.className += ' ' + className;
-}
-
-function removeClass(el, className) {
-	if (el.classList) el.classList.remove(className);
-	else el.className = el.className.replace(new RegExp('\\b' + className + '\\b', 'g'), '');
-}
-
-function hasClass(el, className) {
-	return el.classList
-		? el.classList.contains(className)
-		: new RegExp('\\b' + className + '\\b').test(el.className);
 }

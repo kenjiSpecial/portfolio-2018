@@ -163,7 +163,13 @@ export class ThumbnailPlane extends EventEmitter {
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
-		this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
+		// this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
+		this._gl.uniform3f(
+			this._program.getUniforms('uWindow').location,
+			this._windowWidth,
+			this._windowHeight,
+			this.scale.x
+		);
 		this._gl.uniform1f(this._program.getUniforms('uIntro').location, this._introRate);
 		this._gl.uniform1f(this._program.getUniforms('uYScale').location, yScale);
 
@@ -228,7 +234,9 @@ export class ThumbnailPlane extends EventEmitter {
 
 	resize() {
 		// console.log(window.innerWidth, window.innerHeight);
-		this._uWindowRate = window.innerWidth / window.innerHeight;
+		this._windowWidth = window.innerWidth;
+		this._windowHeight = window.innerHeight;
+		// this._uWindowRate = window.innerWidth / window.innerHeight;
 		// console.log(this._uWindowRate);
 
 		let minSide = Math.min(window.innerWidth, window.innerHeight);
