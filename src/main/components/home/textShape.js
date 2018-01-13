@@ -15,7 +15,7 @@ import { randomFloat, mix, clamp } from 'tubugl-utils/src/mathUtils';
 const vertexShaderSrc = require('./shaders/interactiveShape.vert');
 const fragmentShaderSrc = require('./shaders/interactiveShape.frag');
 
-export class InteractiveShape extends EventEmitter {
+export class TextShape extends EventEmitter {
 	/**
 	 *
 	 * @param {*} gl
@@ -119,13 +119,22 @@ export class InteractiveShape extends EventEmitter {
 	}
 
 	resize(windowWidth, windowHeight) {
-		this._area = {
-			left: this._glInteractiveArea.x - this._glInteractiveArea.width / 2 + windowWidth / 2,
-			right: this._glInteractiveArea.x + this._glInteractiveArea.width / 2 + windowWidth / 2,
-			top: this._glInteractiveArea.y - this._glInteractiveArea.height / 2 + windowHeight / 2,
-			bottom:
-				this._glInteractiveArea.y + this._glInteractiveArea.height / 2 + windowHeight / 2
-		};
+		if (this._glInteractiveArea) {
+			this._area = {
+				left:
+					this._glInteractiveArea.x - this._glInteractiveArea.width / 2 + windowWidth / 2,
+				right:
+					this._glInteractiveArea.x + this._glInteractiveArea.width / 2 + windowWidth / 2,
+				top:
+					this._glInteractiveArea.y -
+					this._glInteractiveArea.height / 2 +
+					windowHeight / 2,
+				bottom:
+					this._glInteractiveArea.y +
+					this._glInteractiveArea.height / 2 +
+					windowHeight / 2
+			};
+		}
 	}
 
 	initialize() {

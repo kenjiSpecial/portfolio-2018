@@ -57,7 +57,8 @@ export class TransitionShape extends EventEmitter {
 		this._makeProgram();
 
 		let scale = 0.2;
-		let xNum = 10;
+
+		let xNum = isMobile ? 10 : 20;
 		let startX = 35;
 		let lineHeight = 8 * scale;
 

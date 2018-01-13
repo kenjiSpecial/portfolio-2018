@@ -33,9 +33,7 @@ void main(){
 	float trans;
 	if(uAnimateIn) trans = sineIn(vTrans);
 	else trans = cubicOut(vTrans);
-	// trans 0 - 0.5
-	vec3 color =  mix(mix(mix(vColor, vColor2, vPositionZ), vColor, clamp(trans/0.8, 0.0, 1.0)), vec3(1.0), clamp(trans/0.2 - 4.0, 0.0, 1.0)); 
-	// float colorAlpha = mix(0.0, 1.0, clamp( vTrans, 0.99, 1.0));
+	vec3 color =  mix(mix(mix(vColor, vColor2, vPositionZ), vec3(0.4, 0.4, 1.0), clamp(trans/0.8, 0.0, 1.0)), vec3(1.0), clamp(trans/0.2 - 4.0, 0.0, 1.0)); 
 	float colorAlpha = mix(0.95, 1.0, vTrans) * clamp(3.0 * uRollOver - 2. * vUv.x, 0.0, 1.0) * uRollOut;
     gl_FragColor = vec4( color, colorAlpha);
 }

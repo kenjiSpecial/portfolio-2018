@@ -13,7 +13,7 @@ import { aboutData } from './data/aboutData';
 import { workData } from './data/workData';
 import { appModel } from './model/appModel';
 
-import { InteractiveShape } from './home/interactiveShape';
+import { TextShape } from './home/textShape';
 import { NormalShape } from './home/normalShape';
 import { TransitionShape } from './home/transitionShape';
 
@@ -122,7 +122,7 @@ export class Home extends EventEmitter {
 			}
 		}
 
-		let yMax = isMobile ? -1 : 3;
+		let yMax = isMobile ? -4 : 3;
 		for (let xx = -9; xx < 9; xx++) {
 			for (let yy = -10; yy <= yMax; yy++) {
 				let theta = xx / 9 * Math.PI + randomFloat(-0.2, 0.2);
@@ -172,14 +172,9 @@ export class Home extends EventEmitter {
 		let indices = delaunay.triangles;
 
 		this._normalShape = new NormalShape(this._gl);
-		this._aboutShape = new InteractiveShape(this._gl, {
+		this._textShape = new TextShape(this._gl, {
 			name: 'about'
 		});
-		this._aboutShape.setInteractiveArea(0, -40, 220, 50);
-		this._worksShape = new InteractiveShape(this._gl, {
-			name: 'works'
-		});
-		this._worksShape.setInteractiveArea(0, 40, 220, 50);
 
 		for (let ii = 0; ii < indices.length; ii += 3) {
 			let indice0 = indices[ii];
@@ -187,22 +182,14 @@ export class Home extends EventEmitter {
 			let indice2 = indices[ii + 2];
 
 			if (
-				indicesColor[indice0] == 'about' &&
-				indicesColor[indice1] == 'about' &&
-				indicesColor[indice2] == 'about'
+				(indicesColor[indice0] == 'about' &&
+					indicesColor[indice1] == 'about' &&
+					indicesColor[indice2] == 'about') ||
+				(indicesColor[indice0] == 'works' &&
+					indicesColor[indice1] == 'works' &&
+					indicesColor[indice2] == 'works')
 			) {
-				this._aboutShape.addPt(
-					[indice0, indice1, indice2],
-					coords,
-					thetaArr,
-					thetaVelocityArr
-				);
-			} else if (
-				indicesColor[indice0] == 'works' &&
-				indicesColor[indice1] == 'works' &&
-				indicesColor[indice2] == 'works'
-			) {
-				this._worksShape.addPt(
+				this._textShape.addPt(
 					[indice0, indice1, indice2],
 					coords,
 					thetaArr,
@@ -219,8 +206,7 @@ export class Home extends EventEmitter {
 		}
 
 		this._normalShape.initialize();
-		this._aboutShape.initialize();
-		this._worksShape.initialize();
+		this._textShape.initialize();
 	}
 
 	_makeTransitionShape() {
@@ -240,14 +226,8 @@ export class Home extends EventEmitter {
 		else this._time += 1 / 500;
 
 		this._normalShape.render(camera, this._modelMatrix, this._introRate, mouse, this._time);
-		this._aboutShape.render(
-			camera,
-			this._modelMatrix,
-			this._introMainTitleRate,
-			mouse,
-			this._time
-		);
-		this._worksShape.render(
+
+		this._textShape.render(
 			camera,
 			this._modelMatrix,
 			this._introMainTitleRate,
@@ -281,8 +261,7 @@ export class Home extends EventEmitter {
 			});
 		}
 
-		this._aboutShape.resize(width, height);
-		this._worksShape.resize(width, height);
+		this._textShape.resize(width, height);
 		this._transitionShapes.forEach(transitionShape => {
 			transitionShape.resize(width, height);
 		});
