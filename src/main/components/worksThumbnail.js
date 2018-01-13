@@ -181,6 +181,7 @@ export class WorksThumbnail extends EventEmitter {
 
 		this.yScale += 1 / 60 * this.velocity;
 		this.yScale += (1.0 - this.yScale) * 0.15;
+		if (this.yScale < 0.15) this.yScale += (0.15 - this.yScale) / 20;
 		this._mouseVelocity = 0;
 
 		this._thumbnails.forEach(thumbnail => {
