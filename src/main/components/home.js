@@ -1,6 +1,8 @@
 const EventEmitter = require('wolfy87-eventemitter');
 const Delaunator = require('delaunator');
+const isMobile = require('./util/isMobile');
 
+import { TweenLite } from 'gsap/TweenLite';
 import { mat4 } from 'gl-matrix/src/gl-matrix';
 import { DebugPlane } from './debugPlane';
 import { Vector3 } from 'tubugl-math/src/vector3';
@@ -120,8 +122,9 @@ export class Home extends EventEmitter {
 			}
 		}
 
+		let yMax = isMobile ? -1 : 3;
 		for (let xx = -9; xx < 9; xx++) {
-			for (let yy = -10; yy <= 3; yy++) {
+			for (let yy = -10; yy <= yMax; yy++) {
 				let theta = xx / 9 * Math.PI + randomFloat(-0.2, 0.2);
 				let rad =
 					(11 + yy) * (40 + 2 * yy) + randomFloat(-10 * (yy + 11), 10 * (yy + 11)) + 40;
@@ -292,23 +295,6 @@ export class Home extends EventEmitter {
 	}
 	_testAbout() {
 		this._aboutTransitionShape.testAbout();
-	}
-	_updateModelMatrix() {
-		// if (
-		// 	!this._isNeedUpdate &&
-		// 	!this.position.needsUpdate &&
-		// 	!this.rotation.needsMatrixUpdate &&
-		// 	!this.scale.needsUpdate
-		// )
-		// 	return;
-		// mat4.fromTranslation(this._modelMatrix, this.position.array);
-		// mat4.scale(this._modelMatrix, this._modelMatrix, this.scale.array);
-		// this.rotation.updateMatrix();
-		// mat4.multiply(this._modelMatrix, this._modelMatrix, this.rotation.matrix);
-		// this._isNeedUpdate = false;
-		// this.position.needsUpdate = false;
-		// this.scale.needsUpdate = false;
-		// return this;
 	}
 	click() {
 		this._transitionShapes.forEach(transitionShape => {
