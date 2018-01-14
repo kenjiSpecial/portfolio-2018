@@ -44,7 +44,8 @@ void main(){
     // mix(1., 1200., uMouseDownScale);
     float dis = length(dMouse)/(500. * uWindow.z);
     float scale;
-    scale =(1.0 - clamp( dis , 0.0, 1.0)) * mix(0.1, 0.2, uMouseDownScale);
+    float windowLength = length(uWindow.xy);
+    scale =(1.0 - clamp( dis , 0.0, 1.0)) * mix(0.1, 0.2, uMouseDownScale) * min(1000./windowLength, 1.);
     
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
     gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w / uWindow.y * uWindow.x;
