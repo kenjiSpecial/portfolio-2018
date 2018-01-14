@@ -41,38 +41,38 @@ export default class App {
 		}
 
 		if (isMobile) {
-			window.addEventListener('deviceorientation', event => {
-				var y = event.beta; // In degree in the range [-180,180]
-				var x = event.gamma; // In degree in the range [-90,90]
-				if (y > 90) y = 90;
-				if (y < 0) y = 0;
+			// window.addEventListener('deviceorientation', event => {
+			// 	var y = event.beta; // In degree in the range [-180,180]
+			// 	var x = event.gamma; // In degree in the range [-90,90]
+			// 	if (y > 90) y = 90;
+			// 	if (y < 0) y = 0;
 
-				let scaleX, scaleY, maxX, maxY;
-				if (appModel.page == 'home') {
-					scaleX = 2.0;
-					scaleY = 1.0;
-					maxX = 0.4;
-					maxY = 0.4;
-				} else {
-					scaleX = 1.0;
-					scaleY = 0.5;
-					maxX = 200 / this._width;
-					maxY = 200 / this._height;
-				}
-				this._targetMouse.x = ((-x + 90) / 180 - 0.5) * scaleX;
-				this._targetMouse.y = (-y / 45 + 1) * scaleY;
+			// 	let scaleX, scaleY, maxX, maxY;
+			// 	if (appModel.page == 'home') {
+			// 		scaleX = 2.0;
+			// 		scaleY = 1.0;
+			// 		maxX = 0.4;
+			// 		maxY = 0.4;
+			// 	} else {
+			// 		scaleX = 1.0;
+			// 		scaleY = 0.5;
+			// 		maxX = 200 / this._width;
+			// 		maxY = 200 / this._height;
+			// 	}
+			// 	this._targetMouse.x = ((-x + 90) / 180 - 0.5) * scaleX;
+			// 	this._targetMouse.y = (-y / 45 + 1) * scaleY;
 
-				if (this._targetMouse.x < -maxX) this._targetMouse.x = -maxX;
-				else if (this._targetMouse.x > maxX) this._targetMouse.x = maxX;
+			// 	if (this._targetMouse.x < -maxX) this._targetMouse.x = -maxX;
+			// 	else if (this._targetMouse.x > maxX) this._targetMouse.x = maxX;
 
-				if (this._targetMouse.y < -maxY) this._targetMouse.y = -maxY;
-				else if (this._targetMouse.y > maxY) this._targetMouse.y = maxY;
+			// 	if (this._targetMouse.y < -maxY) this._targetMouse.y = -maxY;
+			// 	else if (this._targetMouse.y > maxY) this._targetMouse.y = maxY;
 
-				let theta = this._targetMouse.x / 2;
-				let phi = this._targetMouse.y / 2;
-				this._targetAngle.theta = theta;
-				this._targetAngle.phi = phi;
-			});
+			// 	let theta = this._targetMouse.x / 2;
+			// 	let phi = this._targetMouse.y / 2;
+			// 	this._targetAngle.theta = theta;
+			// 	this._targetAngle.phi = phi;
+			// });
 
 			this.canvas.addEventListener('touchmove', event => {
 				event.preventDefault();
@@ -80,14 +80,31 @@ export default class App {
 				this._targetMouse.windowX = event.touches[0].clientX;
 				this._targetMouse.windowY = event.touches[0].clientY;
 
+				this._targetMouse.x =
+					(this._targetMouse.windowX - this._width / 2) / (this._width / 2);
+				this._targetMouse.y =
+					(-this._targetMouse.windowY + this._height / 2) / (this._height / 2);
+
 				this._mouse.windowX = this._targetMouse.windowX;
 				this._mouse.windowY = this._targetMouse.windowY;
+
+				this._targetAngle.theta = this._targetMouse.x / 10;
+				this._targetAngle.phi = this._targetMouse.y / 10;
 			});
 
 			this.canvas.addEventListener('touchstart', event => {
+				this._targetMouse.windowX = event.touches[0].clientX;
+				this._targetMouse.windowY = event.touches[0].clientY;
+
 				this._mouse.windowX = event.touches[0].clientX;
 				this._mouse.windowY = event.touches[0].clientY;
+				this._targetMouse.x =
+					(this._targetMouse.windowX - this._width / 2) / (this._width / 2);
+				this._targetMouse.y =
+					(-this._targetMouse.windowY + this._height / 2) / (this._height / 2);
 
+				this._targetAngle.theta = this._targetMouse.x / 10;
+				this._targetAngle.phi = this._targetMouse.y / 10;
 				this._startTime = +new Date();
 			});
 
@@ -165,7 +182,7 @@ export default class App {
 		this._camera.lookAt([0, 0, 0]);
 		this._camera.update();
 
-		let inc = isMobile ? 20 : 8;
+		let inc = isMobile ? 8 : 6;
 		this._mouse.x += (this._targetMouse.x - this._mouse.x) / inc;
 		this._mouse.y += (this._targetMouse.y - this._mouse.y) / inc;
 
@@ -291,6 +308,10 @@ export default class App {
 	backToHome() {
 		this._home.backToHome();
 		if (!isMobile) this.canvas.addEventListener('click', this._clickHandler);
+	}
+
+	updateRotationHome() {
+		this._home.updateRotation();
 	}
 
 	removeClickEvent() {

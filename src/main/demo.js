@@ -63,21 +63,24 @@ function updatePageHandler() {
 		works.close();
 		app.worksAnimateOut();
 		removeClass(main, 'mouseup');
+	} else if (appModel.prevPage === 'about') {
+		TweenLite.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
 	}
 
 	if (appModel.page === 'about') {
 		TweenLite.set(aboutDom, { display: 'block' });
 		TweenLite.to(aboutDom, 1.6, { opacity: 1, delay: 0.0, ease: Quint.easeInOut });
 		app.removeClickEvent();
+		app.updateRotationHome();
 	} else if (appModel.page === 'home') {
 		if (!appModel.isInit) {
 			app.backToHome();
-			TweenLite.to(aboutDom, 1.0, { opacity: 0, display: 'none', ease: Quint.easeOut });
 		}
 	} else {
 		works.animateIn();
 		app.worksAnimateIn();
 		app.removeClickEvent();
+		app.updateRotationHome();
 
 		setTimeout(() => {
 			app.canvas.style.cursor = '';

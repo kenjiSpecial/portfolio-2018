@@ -70,6 +70,34 @@ export class Home extends EventEmitter {
 	backToHome() {
 		if (appModel.prevPage === 'about') this._aboutTransitionShape.backToHome();
 		else this._workTransitionShape.backToHome();
+
+		let duration = appModel.prevPage === 'about' ? 1.5 : 1.8;
+
+		TweenLite.to(this.rotation, duration, {
+			x: 0,
+			z: 0,
+			onUpdate: () => {
+				mat4.fromTranslation(this._modelMatrix, this.position.array);
+				this.rotation.updateMatrix();
+				mat4.multiply(this._modelMatrix, this._modelMatrix, this.rotation.matrix);
+			},
+			ease: Quint.easeInOut,
+			delay: appModel.prevPage === 'about' ? 0 : 0.3
+		});
+	}
+
+	updateRotation() {
+		TweenLite.to(this.rotation, 1.8, {
+			x: Math.PI / 3,
+			// y: Math.PI / 10,
+			z: appModel.page === 'about' ? Math.PI / 3 : -Math.PI / 3,
+			onUpdate: () => {
+				mat4.fromTranslation(this._modelMatrix, this.position.array);
+				this.rotation.updateMatrix();
+				mat4.multiply(this._modelMatrix, this._modelMatrix, this.rotation.matrix);
+			},
+			ease: Quint.easeOut
+		});
 	}
 
 	setPosition(x, y, z) {
