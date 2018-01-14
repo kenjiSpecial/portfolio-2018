@@ -13,6 +13,7 @@ uniform float uRandY1;
 uniform vec3 uWindow;
 uniform float uIntro;
 uniform float uYScale;
+uniform float uMouseDownScale;
 
 varying vec2 vUv;
 varying float vScale;
@@ -40,13 +41,14 @@ void main(){
     // float scaleRate = uWindowRate;
     // dMouse.y = dMouse.y  / ( scaleRate );
 	float mTheta = atan(dMouse.y, dMouse.x);
-    float dis = length(dMouse)/(1500. * uWindow.z);
+    // mix(1., 1200., uMouseDownScale);
+    float dis = length(dMouse)/(500. * uWindow.z);
     float scale;
-    scale =(1.0 - clamp( dis , 0.0, 1.0)) * 0.1;
+    scale =(1.0 - clamp( dis , 0.0, 1.0)) * mix(0.1, 0.2, uMouseDownScale);
     
 	gl_Position.x = gl_Position.x + scale * cos(mTheta) * gl_Position.w;
     gl_Position.y = gl_Position.y + scale * sin(mTheta) * gl_Position.w / uWindow.y * uWindow.x;
     
     vAlpha = clamp( (1.0 - transIn) * 2.0 - vUv.x, 0.0, 1.0) * clamp(1.0 + vUv.x- 2.0 * transOut, 0.0, 1.0 ) * (1.0 -  uIntro);
-    vScale = dis * 10. ;
+    vScale = dis * mix(2., 1.0,  uMouseDownScale) ;
 }

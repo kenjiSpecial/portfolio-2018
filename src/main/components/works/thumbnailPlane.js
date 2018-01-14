@@ -125,17 +125,17 @@ export class ThumbnailPlane extends EventEmitter {
 		}
 	}
 
-	render(camera, mouse, totalSlideRate, thumbnailLength, yScale) {
+	render(camera, mouse, totalSlideRate, thumbnailLength, yScale, mouseDownScale) {
 		let curValue = totalSlideRate - this.id;
 		let rate = curValue - Math.floor(curValue / thumbnailLength) * thumbnailLength;
 		if (rate < thumbnailLength && rate > thumbnailLength - 1) rate = rate - thumbnailLength;
 		this._transRate = rate;
 
-		this.update(camera, mouse, yScale).draw();
+		this.update(camera, mouse, yScale, mouseDownScale).draw();
 		if (this._isWire) this.updateWire(camera).drawWireframe();
 	}
 
-	update(camera, mouse, yScale) {
+	update(camera, mouse, yScale, mouseDownScale) {
 		this._updateModelMatrix();
 
 		this._program.bind();
@@ -163,14 +163,13 @@ export class ThumbnailPlane extends EventEmitter {
 		this._gl.uniform2f(this._program.getUniforms('uMouse').location, mouse.x, mouse.y);
 		this._gl.uniform1f(this._program.getUniforms('uRandY0').location, this._uRand0);
 		this._gl.uniform1f(this._program.getUniforms('uRandY1').location, this._uRand1);
-		// this._gl.uniform1f(this._program.getUniforms('uWindowRate').location, this._uWindowRate);
+		this._gl.uniform1f(this._program.getUniforms('uMouseDownScale').location, mouseDownScale);
 		this._gl.uniform3f(
 			this._program.getUniforms('uWindow').location,
 			this._windowWidth,
 			this._windowHeight,
 			this.scale.x
 		);
-		console.log(this._windowWidth, this._windowHeight);
 		this._gl.uniform1f(this._program.getUniforms('uIntro').location, this._introRate);
 		this._gl.uniform1f(this._program.getUniforms('uYScale').location, yScale);
 

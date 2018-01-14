@@ -20,18 +20,18 @@ export class WorksThumbnail extends EventEmitter {
 		this.dragDis = Math.max(window.innerWidth / 4, isMobile ? 150 : 200);
 		this.prevFocusNum = this.focusNum = 0;
 
+		this._parent = params.parent ? params.parent : document.getElementById('main');
 		this._gl = gl;
 		this._time = 0;
 		this._totalSlideTargetRate = this._totalSlideRate = 0;
+		this._mouseVelocity = 0;
+		this._mouseDownScale = 0;
 		this._modelMatrix = mat4.create();
 		this._thumbnails = [];
-		this._parent = params.parent ? params.parent : document.getElementById('main');
-
 		this._isMouseEnable = false;
 
 		this.velocity = 0;
 		this.yScale = 1;
-		this._mouseVelocity = 0;
 
 		this._makeLoaders();
 		appModel.addListener('image:loaded', this._loadedHandler.bind(this));
@@ -94,7 +94,8 @@ export class WorksThumbnail extends EventEmitter {
 
 		this._curDistanceRate = this._prevDistanceRate = 0;
 		this._startPt = isMobile ? event.touches[0].clientX : event.clientX;
-		// event.preventDefault();
+		TweenLite.killTweensOf(this._mouseDownScale);
+		TweenLite.to(this, 0.4, { _mouseDownScale: 1 });
 	}
 
 	_mouseMoveHandler(event) {
@@ -115,6 +116,8 @@ export class WorksThumbnail extends EventEmitter {
 	_mouseUpHandler(event) {
 		this._removeMouseUpEvent();
 		TweenLite.to(this, 0.3, { _totalSlideTargetRate: Math.round(this._totalSlideTargetRate) });
+		TweenLite.killTweensOf(this._mouseDownScale);
+		TweenLite.to(this, 0.4, { _mouseDownScale: 0 });
 	}
 
 	_removeMouseUpEvent() {
@@ -163,26 +166,32 @@ export class WorksThumbnail extends EventEmitter {
 		window.removeEventListener('touchend', this._mouseUpHandler);
 	}
 
-	render(camera, mouse) {
-		this._time += 1 / 60;
-		if (this._isAnimateIn) {
-			this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 10;
+	render(camera, mouse, del) {
+		this._time += del;
+		if (del > 0) {
+			let timeScale = Math.max(del / 0.01666, 1);
+			if (this._isAnimateIn) {
+				// only
+				this._totalSlideRate +=
+					(this._totalSlideTargetRate - this._totalSlideRate) / (10 * timeScale);
 
-			let focusNum = this._getCurFocusThumbId();
-			this.prevFocusNum = this.focusNum;
-			this.focusNum = focusNum;
+				let focusNum = this._getCurFocusThumbId();
+				this.prevFocusNum = this.focusNum;
+				this.focusNum = focusNum;
 
-			if (this.prevFocusNum != this.focusNum) appModel.curWorkNum = parseInt(this.focusNum);
+				if (this.prevFocusNum != this.focusNum)
+					appModel.curWorkNum = parseInt(this.focusNum);
 
-			this.velocity -= this._mouseVelocity * this.yScale * 30;
+				this.velocity -= this._mouseVelocity * this.yScale * 10 * timeScale;
+			}
+			this.velocity -= 0.1 * (this.yScale - 1) * timeScale;
+			this.velocity *= 0.8 * timeScale;
+
+			this.yScale += 0.0166 * timeScale * this.velocity;
+			this.yScale += (1.0 - this.yScale) * 0.2 * timeScale;
+			if (this.yScale < 0.4) this.yScale += (0.4 - this.yScale) / (10 * timeScale);
+			this._mouseVelocity = 0;
 		}
-		this.velocity -= 0.1 * (this.yScale - 1);
-		this.velocity *= 0.9;
-
-		this.yScale += 1 / 60 * this.velocity;
-		this.yScale += (1.0 - this.yScale) * 0.15;
-		if (this.yScale < 0.4) this.yScale += (0.4 - this.yScale) / 10;
-		this._mouseVelocity = 0;
 
 		this._thumbnails.forEach(thumbnail => {
 			thumbnail.render(
@@ -190,7 +199,8 @@ export class WorksThumbnail extends EventEmitter {
 				mouse,
 				this._totalSlideRate,
 				this._thumbnails.length,
-				this.yScale
+				this.yScale,
+				this._mouseDownScale
 			);
 		});
 

@@ -35,9 +35,9 @@ export default class App {
 		this.resize(this._width, this._height);
 
 		if (params.isDebug) {
-			this.stats = new Stats();
-			document.body.appendChild(this.stats.dom);
-			this._addGui();
+			// this.stats = new Stats();
+			// document.body.appendChild(this.stats.dom);
+			// this._addGui();
 		}
 
 		if (isMobile) {
@@ -128,6 +128,7 @@ export default class App {
 	animateIn() {
 		this.isLoop = true;
 		this._home.startIntro();
+		this._loopTime = +new Date();
 		TweenLite.ticker.addEventListener('tick', this.loop, this);
 	}
 
@@ -141,6 +142,10 @@ export default class App {
 
 	loop() {
 		if (this.stats) this.stats.update();
+		let time = +new Date();
+		let del = (time - this._loopTime) / 1000;
+		// console.log(del);
+		this._loopTime = time;
 
 		this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 		this.gl.clearColor(1.0, 1.0, 1.0, 1);
@@ -150,7 +155,7 @@ export default class App {
 
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-		this._camera.time += 1 / 60;
+		this._camera.time += del;
 
 		this._angle.theta += (this._targetAngle.theta - this._angle.theta) / 10;
 		this._angle.phi += (this._targetAngle.phi - this._angle.phi) / 10;
@@ -166,7 +171,7 @@ export default class App {
 
 		// render home
 		if (appModel.page == 'home' || (appModel.prevPage == 'home' && appModel.isPageTransition))
-			this._home.render(this._camera, this._mouse);
+			this._home.render(this._camera, this._mouse, del);
 
 		// render works thumbnail
 		if (
@@ -174,7 +179,7 @@ export default class App {
 			(appModel.prevPage == 'works' && appModel.isPageTransition)
 		) {
 			this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
-			this._worksThumbnail.render(this._camera, this._mouse);
+			this._worksThumbnail.render(this._camera, this._mouse, del);
 		}
 
 		if (appModel.page === 'home') {
@@ -277,10 +282,10 @@ export default class App {
 	}
 
 	_addGui() {
-		this.gui = new dat.GUI();
-		this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
-		this._home.addGui(this.gui);
-		this._worksThumbnail.addGui(this.gui);
+		// this.gui = new dat.GUI();
+		// this.playAndStopGui = this.gui.add(this, '_playAndStop').name('pause');
+		// this._home.addGui(this.gui);
+		// this._worksThumbnail.addGui(this.gui);
 	}
 
 	backToHome() {
