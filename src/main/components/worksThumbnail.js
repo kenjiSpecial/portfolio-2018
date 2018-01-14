@@ -169,7 +169,6 @@ export class WorksThumbnail extends EventEmitter {
 	render(camera, mouse, del) {
 		this._time += del;
 		if (del > 0) {
-			let timeScale = Math.max(del / 0.01666, 1);
 			if (this._isAnimateIn) {
 				// only
 				this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 10;
