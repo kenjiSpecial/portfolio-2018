@@ -172,8 +172,7 @@ export class WorksThumbnail extends EventEmitter {
 			let timeScale = Math.max(del / 0.01666, 1);
 			if (this._isAnimateIn) {
 				// only
-				this._totalSlideRate +=
-					(this._totalSlideTargetRate - this._totalSlideRate) / (10 * timeScale);
+				this._totalSlideRate += (this._totalSlideTargetRate - this._totalSlideRate) / 10;
 
 				let focusNum = this._getCurFocusThumbId();
 				this.prevFocusNum = this.focusNum;
@@ -182,14 +181,14 @@ export class WorksThumbnail extends EventEmitter {
 				if (this.prevFocusNum != this.focusNum)
 					appModel.curWorkNum = parseInt(this.focusNum);
 
-				this.velocity -= this._mouseVelocity * this.yScale * 10 * timeScale;
+				this.velocity -= this._mouseVelocity * this.yScale * 10;
 			}
-			this.velocity -= 0.1 * (this.yScale - 1) * timeScale;
-			this.velocity *= 0.8 * timeScale;
+			this.velocity -= 0.1 * (this.yScale - 1);
+			this.velocity *= 0.8;
 
-			this.yScale += 0.0166 * timeScale * this.velocity;
-			this.yScale += (1.0 - this.yScale) * 0.2 * timeScale;
-			if (this.yScale < 0.4) this.yScale += (0.4 - this.yScale) / (10 * timeScale);
+			this.yScale += del * this.velocity;
+			this.yScale += (1.0 - this.yScale) * 0.2;
+			if (this.yScale < 0.4) this.yScale += (0.4 - this.yScale) / 10;
 			this._mouseVelocity = 0;
 		}
 
